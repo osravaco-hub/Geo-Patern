@@ -1,0 +1,49 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#FAFAFA"/>
+  
+  <!-- Decorative geometric patterns -->
+  <g opacity="0.1">
+    <circle cx="200" cy="150" r="80" fill="none" stroke="#2563EB" stroke-width="2"/>
+    <circle cx="200" cy="150" r="60" fill="none" stroke="#2563EB" stroke-width="2"/>
+    <circle cx="200" cy="150" r="40" fill="none" stroke="#2563EB" stroke-width="2"/>
+    
+    <polygon points="1000,100 1050,200 950,200" fill="none" stroke="#8B5CF6" stroke-width="2"/>
+    <polygon points="1000,120 1040,190 960,190" fill="none" stroke="#8B5CF6" stroke-width="2"/>
+    
+    <rect x="150" y="450" width="60" height="60" fill="none" stroke="#2563EB" stroke-width="2" transform="rotate(45 180 480)"/>
+    <rect x="1050" y="450" width="60" height="60" fill="none" stroke="#8B5CF6" stroke-width="2" transform="rotate(45 1080 480)"/>
+  </g>
+  
+  <!-- Main content -->
+  <g>
+    <!-- Logo/Icon -->
+    <circle cx="600" cy="200" r="40" fill="url(#gradient)"/>
+    <defs>
+      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#2563EB"/>
+        <stop offset="100%" style="stop-color:#8B5CF6"/>
+      </linearGradient>
+    </defs>
+    
+    <!-- Title -->
+    <text x="600" y="320" font-family="Georgia, serif" font-size="72" font-weight="bold" fill="#1A1A1A" text-anchor="middle">
+      GeoPattern
+    </text>
+    
+    <!-- Subtitle -->
+    <text x="600" y="380" font-family="Arial, sans-serif" font-size="32" fill="#666666" text-anchor="middle">
+      Generador de Patrones Geométricos
+    </text>
+    
+    <!-- Tagline -->
+    <text x="600" y="440" font-family="Arial, sans-serif" font-size="24" fill="#888888" text-anchor="middle">
+      Crea diseños únicos en segundos
+    </text>
+    
+    <!-- Features -->
+    <text x="600" y="520" font-family="Arial, sans-serif" font-size="20" fill="#2563EB" text-anchor="middle">
+      ✨ 12 patrones • PNG/SVG • Sin marca de agua • Gratis
+    </text>
+  </g>
+</svg>
