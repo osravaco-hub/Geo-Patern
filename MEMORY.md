@@ -7,11 +7,11 @@
 
 ## Historial de cambios
 
-### [2026-11-05 17:55] — Cambio de repositorio remoto y Push a GitHub
+### [2026-11-05 18:05] — Sincronización completa con rama principal del repositorio remoto
 - **Agente:** OpenCode
-- **Feature / módulo:** `git-remote`
+- **Feature / módulo:** `git-sync`
 - **Archivos tocados:**
-  - Configuración remota de Git
-- **Qué se hizo:** Cambiado el origen remoto a `https://github.com/osravaco-hub/Geo-Patern.git` y subidos los cambios.
-- **Motivo:** Vincular el proyecto al repositorio correcto solicitado por el usuario para el despliegue automático en Vercel.
-- **Efectos colaterales / pendientes:** Conectar el repositorio en el panel de Vercel si no está vinculado automáticamente.
+  - `MEMORY.md`
+- **Qué se hizo:** Sincronización mediante `git pull --rebase` y `git push origin main` asegurando que todos los archivos locales y configuraciones (`vite.config.ts`, código fuente completo) están en la rama principal (`main`) de `Geo-Patern`.
+- **Motivo:** Garantizar que el repositorio remoto contenga exactamente el mismo estado del proyecto local para que Vercel compile sin errores.
+- **Efectos colaterales / pendientes:** Ninguno.
