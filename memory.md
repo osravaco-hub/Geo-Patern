@@ -6,12 +6,12 @@
 
 ## Historial de cambios
 
-### [2026-11-05 23:55] — Adición de vercel.json para correcto enrutamiento y assets
+### [2026-11-06 00:00] — Cambio de base path en vite.config.ts para rutas absolutas
 - **Agente:** OpenCode
-- **Feature / módulo:** `vercel-config`
+- **Feature / módulo:** `vite-config`
 - **Archivos tocados:**
-  - `vercel.json`
+  - `vite.config.ts`
   - `memory.md`
-- **Qué se hizo:** Creado `vercel.json` especificando explícitamente el framework (`vite`), comando de build (`npm run build`) y directorio de salida (`dist`). Subido a `origin/main`.
-- **Motivo:** Los warnings de npm (como `install-scripts` o rutas relativas) provocaban que Vercel no cargara correctamente las rutas absolutas de los assets CSS/JS, mostrando la página sin formato.
-- **Efectos colaterales / pendientes:** Ninguno. Siguiente despliegue en Vercel aplicará esta configuración.
+- **Qué se hizo:** Cambiado `base` de `./` a `/` en vite.config.ts.
+- **Motivo:** Vercel no cargaba los assets CSS/JS correctamente debido a rutas relativas.
+- **Efectos colaterales / pendientes:** Ninguno.
