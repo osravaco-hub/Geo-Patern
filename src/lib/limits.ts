@@ -10,9 +10,8 @@ export interface DownloadRecord {
 
 // Weekly limits by tier
 export const WEEKLY_LIMITS: Record<UserTier, number> = {
-  guest: Infinity, // unlimited but only ultra-basic patterns
   free: 3,
-  premium: Infinity,
+  pro: Infinity,
 };
 
 export function getDownloadHistory(): DownloadRecord[] {
