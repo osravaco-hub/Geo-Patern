@@ -10,7 +10,7 @@ export interface DownloadRecord {
 
 // Weekly limits by tier
 export const WEEKLY_LIMITS: Record<UserTier, number> = {
-  free: 3,
+  free: Infinity,
   pro: Infinity,
 };
 
