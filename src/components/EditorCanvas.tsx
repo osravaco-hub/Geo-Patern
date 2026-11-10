@@ -2,14 +2,6 @@ import { useEffect, useRef } from 'react';
 import { generatePattern, PatternConfig } from '../lib/patterns';
 import { CanvasRatio, RATIOS, ratioDims } from '../lib/export';
 
-// Colores de las guías, como en el mockup
-const GUIDES: { ratio: CanvasRatio; color: string }[] = [
-  { ratio: '1:1', color: '#FFED00' },
-  { ratio: '4:3', color: '#00A0E4' },
-  { ratio: '16:9', color: 'var(--color-text)' },
-  { ratio: '9:16', color: '#E5007D' },
-];
-
 // Tamaño de un ratio dentro del escenario cuadrado, en %
 function frame(ratio: CanvasRatio) {
   const [a, b] = RATIOS[ratio];
