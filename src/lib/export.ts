@@ -6,14 +6,6 @@ export type ExportFormat = 'png' | 'svg';
 export type ExportResolution = '1x' | '2x' | '3x' | '4k';
 export type CanvasRatio = '1:1' | '16:9' | '4:3' | '9:16' | '3:4';
 
-export const RATIOS: Record<CanvasRatio, [number, number]> = {
-  '1:1': [1, 1],
-  '16:9': [16, 9],
-  '4:3': [4, 3],
-  '9:16': [9, 16],
-  '3:4': [3, 4],
-};
-
 /** Medidas de un ratio según su lado más largo. 16:9 y 4:3 son horizontales; 9:16 y 3:4 son verticales. */
 export function ratioDims(ratio: CanvasRatio, longSide: number) {
   const [a, b] = RATIOS[ratio];
