@@ -4,6 +4,7 @@ import { UserTier } from './userTier';
 
 export type ExportFormat = 'png' | 'svg';
 export type ExportResolution = '1x' | '2x' | '3x' | '4k';
+export type CanvasRatio = '1:1' | '16:9' | '4:3' | '9:16' | '3:4';
 
 export const RATIOS: Record<CanvasRatio, [number, number]> = {
   '1:1': [1, 1],
