@@ -56,10 +56,5 @@ export default function EditorCanvas({ config, seed, ratio }: Props) {
           height: `${active.h}%`,
           border: '2px solid #FFFFFF',
         }}
-      >
-          {ratio}
-        </span>
-      </div>
-    </div>
-  );
+      />
 }
