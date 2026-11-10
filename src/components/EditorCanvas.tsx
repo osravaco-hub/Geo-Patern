@@ -57,7 +57,6 @@ export default function EditorCanvas({ config, seed, ratio }: Props) {
           border: '2px solid #FFFFFF',
         }}
       >
-        <span className="absolute left-1.5 top-1 text-sm leading-none text-white font-medium">
           {ratio}
         </span>
       </div>
