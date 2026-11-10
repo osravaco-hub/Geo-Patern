@@ -57,4 +57,6 @@ export default function EditorCanvas({ config, seed, ratio }: Props) {
           border: '2px solid #FFFFFF',
         }}
       />
+   </div>
+ );
 }
