@@ -11,7 +11,7 @@ export const RATIOS: Record<CanvasRatio, [number, number]> = {
   '16:9': [16, 9],
   '4:3': [4, 3],
   '9:16': [9, 16],
-  '3:4': [A, b],
+  '3:4': [4, 3],
 };
 
 /** Medidas de un ratio según su lado más largo. 16:9 y 4:3 son horizontales; 9:16 y 3:4 son verticales. */
