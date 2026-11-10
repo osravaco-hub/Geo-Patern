@@ -2,14 +2,6 @@ import { useEffect, useRef } from 'react';
 import { generatePattern, PatternConfig } from '../lib/patterns';
 import { CanvasRatio, RATIOS, ratioDims } from '../lib/export';
 
-// Colores de las guías, como en el mockup
-const GUIDES: { ratio: CanvasRatio; color: string }[] = [
-  { ratio: '1:1', color: '#FFED00' },
-  { ratio: '4:3', color: '#00A0E4' },
-  { ratio: '16:9', color: 'var(--color-text)' },
-  { ratio: '9:16', color: '#E5007D' },
-];
-
 // Tamaño de un ratio dentro del escenario cuadrado, en %
 function frame(ratio: CanvasRatio) {
   const [a, b] = RATIOS[ratio];
@@ -56,25 +48,19 @@ export default function EditorCanvas({ config, seed, ratio }: Props) {
         <canvas ref={ref} width={width} height={height} className="w-full h-full block" />
       </div>
 
-      {/* Guías de referencia de cada ratio */}
-      {GUIDES.map(({ ratio: r, color }) => {
-        const f = frame(r);
-        const on = r === ratio;
-        return (
-          <div
-            key={r}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-            style={{
-              width: `${f.w}%`,
-              height: `${f.h}%`,
-              border: `${on ? 2 : 1}px solid ${color}`,
-              opacity: on ? 1 : 0.55,
-            }}
-          >
-            <span className="absolute left-1.5 top-1 text-sm leading-none" style={{ color }}>{r}</span>
-          </div>
-        );
-      })}
+      {/* Guía de referencia ÚNICAMENTE para el ratio activo en blanco */}
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+        style={{
+          width: `${active.w}%`,
+          height: `${active.h}%`,
+          border: '2px solid #FFFFFF',
+        }}
+      >
+        <span className="absolute left-1.5 top-1 text-sm leading-none text-white font-medium">
+          {ratio}
+        </span>
+      </div>
     </div>
   );
 }
