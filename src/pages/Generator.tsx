@@ -10,6 +10,8 @@ import { getPatternParams, randomizeExtras } from '../lib/patternParams';
 import { SavedPattern, savePattern } from '../lib/savedPatterns';
 import Header from '../components/Header';
 import EditorCanvas from '../components/EditorCanvas';
+import ViewModeMenu from '../components/ViewModeMenu';
+import { PBRViewMode } from '../lib/pbrMaps';
 import EditorPanel from '../components/EditorPanel';
 import EditorActions from '../components/EditorActions';
 import UpsellModal from '../components/UpsellModal';
@@ -37,6 +39,7 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   const [upsellFeature, setUpsellFeature] = useState('');
   const [justSaved, setJustSaved] = useState(false);
   const [pinMode, setPinMode] = useState(false);
+  const [viewMode, setViewMode] = useState<PBRViewMode>('color');
   const [selPin, setSelPin] = useState<number | null>(null);
 
   const tier = LOCKING_ENABLED ? getUserTier(user) : 'pro';
@@ -104,13 +107,18 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
               <button key={r} onClick={() => { setRatio(r); setSeed(s => s + 1); }} aria-pressed={ratio === r}
                 className={`h-11 px-4 rounded-lg border text-xl transition ${ratio === r ? 'bg-accent text-accent-text border-accent' : 'border-text/70 hover:border-accent'}`}>{r}</button>
             ))}
-            <button disabled title="Próximamente: vista previa de mapas (normales, densidad y alpha)"
-              className="ml-auto h-11 px-8 rounded-lg border border-text/40 text-xl text-text-secondary cursor-not-allowed">3D</button>
+            <ViewModeMenu value={viewMode} onChange={setViewMode} />
           </div>
 
-          <EditorCanvas config={config} seed={seed} ratio={ratio}
+          <EditorCanvas config={config} seed={seed} ratio={ratio} viewMode={viewMode}
             pinMode={pinMode && config.type === 'halftoneDots'} selectedPin={selPin}
             onPinsChange={pins => setConfig(p => ({ ...p, pins }))} onSelectPin={setSelPin} />
+
+          {viewMode !== 'color' && (
+            <p className="text-sm text-text-secondary text-center">
+              Vista previa del mapa. Descargar y Copiar siguen entregando el patrón en color.
+            </p>
+          )}
 
           <EditorActions tier={tier} remaining={LOCKING_ENABLED ? getRemainingDownloads(tier, user.downloadsToday) : Infinity}
             onDownload={handleDownload} onLocked={askPro} onCopy={handleCopy} />
