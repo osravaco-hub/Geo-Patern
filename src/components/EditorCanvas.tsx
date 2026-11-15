@@ -1,25 +1,39 @@
 import { useEffect, useRef } from 'react';
-import { generatePattern, PatternConfig } from '../lib/patterns';
+import { generatePattern, PatternConfig, Pin } from '../lib/patterns';
 import { CanvasRatio, RATIOS, ratioDims } from '../lib/export';
 import { PBRViewMode, generateHeightMap, generateNormalMap, generateAlphaMap } from '../lib/pbrMaps';
+
+export const MAX_PINS = 12;
 
 // Tamaño de un ratio dentro del escenario cuadrado, en %
 function frame(ratio: CanvasRatio) {
   const [a, b] = RATIOS[ratio];
   return a >= b ? { w: 100, h: (b / a) * 100 } : { w: (a / b) * 100, h: 100 };
 }
+const clamp = (v: number) => Math.min(100, Math.max(0, v));
 
 interface Props {
   config: PatternConfig;
   seed: number;
   ratio: CanvasRatio;
   viewMode?: PBRViewMode;
+  pinMode?: boolean;
+  selectedPin?: number | null;
+  onPinsChange?: (pins: Pin[]) => void;
+  onSelectPin?: (i: number | null) => void;
 }
 
-export default function EditorCanvas({ config, seed, ratio, viewMode = 'color' }: Props) {
+export default function EditorCanvas({
+  config, seed, ratio, viewMode = 'color', pinMode = false, selectedPin = null, onPinsChange, onSelectPin,
+}: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const overlay = useRef<HTMLDivElement>(null);
+  const drag = useRef<number | null>(null);
   const { width, height } = ratioDims(ratio, 800);
   const transparent = config.backgroundColor === 'transparent';
+  const pins = config.pins ?? [];
+  // Los pines solo se editan en la vista de color; en los mapas su efecto ya está incluido
+  const showPins = pinMode && viewMode === 'color';
 
   useEffect(() => {
     const canvas = ref.current;
@@ -27,31 +41,39 @@ export default function EditorCanvas({ config, seed, ratio, viewMode = 'color' }
     if (!canvas || !ctx) return;
 
     const t = setTimeout(() => {
-      // 1. Dibujar patrón base
+      // 1. Dibujar el patrón base
       generatePattern(ctx, width, height, config, seed);
 
-      // 2. Aplicar transformaciones PBR si viewMode no es color
+      // 2. Convertir a mapa PBR si la vista no es color
       if (viewMode !== 'color') {
         const imageData = ctx.getImageData(0, 0, width, height);
-        let processedData: ImageData;
-
+        let out: ImageData;
         if (viewMode === 'height') {
-          processedData = generateHeightMap(imageData, width, height);
+          out = generateHeightMap(imageData, width, height);
         } else if (viewMode === 'normal') {
-          const heightMap = generateHeightMap(imageData, width, height);
-          processedData = generateNormalMap(heightMap, width, height, 1, 1);
-        } else if (viewMode === 'alpha') {
-          processedData = generateAlphaMap(imageData, width, height, 128);
+          out = generateNormalMap(generateHeightMap(imageData, width, height), width, height, 1, 1);
         } else {
-          processedData = imageData;
+          out = generateAlphaMap(imageData, width, height, 128);
         }
-
-        ctx.putImageData(processedData, 0, 0);
+        ctx.putImageData(out, 0, 0);
       }
     }, 25);
 
     return () => clearTimeout(t);
   }, [config, seed, width, height, viewMode]);
+
+  const toPct = (e: React.PointerEvent) => {
+    const r = overlay.current!.getBoundingClientRect();
+    return { x: clamp(((e.clientX - r.left) / r.width) * 100), y: clamp(((e.clientY - r.top) / r.height) * 100) };
+  };
+
+  // Clic en una zona vacía: añade un pin
+  const addPin = (e: React.PointerEvent) => {
+    if (!onPinsChange || pins.length >= MAX_PINS) return;
+    const { x, y } = toPct(e);
+    onPinsChange([...pins, { x, y, w: 1 }]);
+    onSelectPin?.(pins.length);
+  };
 
   const active = frame(ratio);
 
@@ -64,23 +86,48 @@ export default function EditorCanvas({ config, seed, ratio, viewMode = 'color' }
           width: `${active.w}%`,
           height: `${active.h}%`,
           backgroundColor: 'var(--color-background-secondary)',
-          backgroundImage: transparent
+          backgroundImage: transparent && viewMode === 'color'
             ? 'conic-gradient(#8884 25%, transparent 0 50%, #8884 0 75%, transparent 0)'
             : undefined,
           backgroundSize: '20px 20px',
         }}
       >
         <canvas ref={ref} width={width} height={height} className="w-full h-full block" />
+
+        {/* Pines de densidad (solo en modo pines) */}
+        {showPins && (
+          <div ref={overlay} className="absolute inset-0 cursor-crosshair" style={{ touchAction: 'none' }} onPointerDown={addPin}>
+            {pins.map((p, i) => (
+              <div
+                key={i}
+                role="button"
+                tabIndex={0}
+                aria-label={`Pin ${i + 1}`}
+                className={`absolute w-6 h-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 flex items-center justify-center text-[11px] font-semibold cursor-grab active:cursor-grabbing select-none ${selectedPin === i ? 'bg-accent border-white text-accent-text' : 'bg-black/40 border-accent text-white'}`}
+                style={{ left: `${p.x}%`, top: `${p.y}%`, touchAction: 'none' }}
+                onPointerDown={e => { e.stopPropagation(); onSelectPin?.(i); drag.current = i; e.currentTarget.setPointerCapture(e.pointerId); }}
+                onPointerMove={e => {
+                  if (drag.current !== i || !onPinsChange) return;
+                  const { x, y } = toPct(e);
+                  onPinsChange(pins.map((q, k) => (k === i ? { ...q, x, y } : q)));
+                }}
+                onPointerUp={() => { drag.current = null; }}
+                onDoubleClick={e => { e.stopPropagation(); onPinsChange?.(pins.filter((_, k) => k !== i)); onSelectPin?.(null); }}
+                onKeyDown={e => {
+                  if (e.key === 'Delete' || e.key === 'Backspace') { onPinsChange?.(pins.filter((_, k) => k !== i)); onSelectPin?.(null); }
+                }}
+              >
+                {i + 1}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Silueta del ratio seleccionado en color blanco */}
       <div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        style={{
-          width: `${active.w}%`,
-          height: `${active.h}%`,
-          border: '2px solid #FFFFFF',
-        }}
+        style={{ width: `${active.w}%`, height: `${active.h}%`, border: '2px solid #FFFFFF' }}
       />
     </div>
   );
