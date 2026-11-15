@@ -50,9 +50,11 @@ export default function EditorActions({ tier, remaining, onDownload, onLocked, o
               <div>
                 <p className="text-sm uppercase tracking-wider text-text-secondary mb-2">Formato</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {(['png', 'svg'] as ExportFormat[]).map(f => (
+                  {(['png', 'svg', 'height', 'normal', 'alpha'] as ExportFormat[]).map(f => (
                     <button key={f} onClick={() => setFormat(f)}
-                      className={`h-10 rounded-lg border text-lg uppercase ${format === f ? 'bg-accent text-accent-text border-accent' : 'border-text/60 text-text hover:border-accent'}`}>{f}</button>
+                      className={`h-10 rounded-lg border text-lg uppercase ${format === f ? 'bg-accent text-accent-text border-accent' : 'border-text/60 text-text hover:border-accent'}`}>
+                      {f === 'height' ? 'Altura' : f === 'normal' ? 'Normales' : f === 'alpha' ? 'Alpha' : f}
+                    </button>
                   ))}
                 </div>
               </div>
