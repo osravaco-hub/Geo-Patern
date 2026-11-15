@@ -1,8 +1,9 @@
 // Exportación del editor: PNG/SVG, ratios, resoluciones y código CSS
 import { PatternConfig, generatePattern, generateSVG } from './patterns';
 import { UserTier } from './userTier';
+import { generateHeightMap, generateNormalMap, generateAlphaMap } from './pbrMaps';
 
-export type ExportFormat = 'png' | 'svg';
+export type ExportFormat = 'png' | 'svg' | 'height' | 'normal' | 'alpha';
 export type ExportResolution = '1x' | '2x' | '3x' | '4k';
 export type CanvasRatio = '1:1' | '16:9' | '4:3' | '9:16' | '3:4';
 
@@ -11,10 +12,10 @@ export const RATIOS: Record<CanvasRatio, [number, number]> = {
   '16:9': [16, 9],
   '4:3': [4, 3],
   '9:16': [9, 16],
-  '3:4': [3, 4]
+  '3:4': [3, 4],
 };
 
-/** Medidas de un ratio según su lado más largo. 16:9 y 4:3 son horizontales; 9:16 es vertical. */
+/** Medidas de un ratio según su lado más largo. 16:9 y 4:3 son horizontales; 9:16 y 3:4 son verticales. */
 export function ratioDims(ratio: CanvasRatio, longSide: number) {
   const [a, b] = RATIOS[ratio];
   return a >= b
@@ -57,20 +58,42 @@ export async function exportPattern(params: ExportParams): Promise<ExportResult>
     return { success: false, error: 'Esta resolución es solo para el plan Pro' };
   }
   const { width, height } = ratioDims(ratio, getResolutionSize(resolution));
-  const name = `geopattern-${config.type}-${ratio.replace(':', 'x')}-${resolution}-${seed}`;
+  const formatExtension = format === 'svg' ? 'svg' : 'png';
+  const name = `geopattern-${config.type}-${ratio.replace(':', 'x')}-${resolution}-${seed}-${format}`;
 
   try {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return { success: false, error: 'No se pudo crear el lienzo' };
+
+    // Generar el patrón base
+    generatePattern(ctx, width, height, config, seed);
+
+    // Convertir mapa según tipo de exportación
+    if (format === 'height') {
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const heightMap = generateHeightMap(imageData, width, height);
+      ctx.putImageData(heightMap, 0, 0);
+    } else if (format === 'normal') {
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const heightMap = generateHeightMap(imageData, width, height);
+      const normalMap = generateNormalMap(heightMap, width, height, 1, 1);
+      ctx.putImageData(normalMap, 0, 0);
+    } else if (format === 'alpha') {
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const alphaMap = generateAlphaMap(imageData, width, height, 128);
+      ctx.putImageData(alphaMap, 0, 0);
+    }
+
+    // Exportar según formato
     if (format === 'svg') {
       const svg = generateSVG(width, height, config, seed);
       const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
       return { success: true, dataUrl: url, filename: `${name}.svg` };
     }
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return { success: false, error: 'No se pudo crear el lienzo' };
-    generatePattern(ctx, width, height, config, seed);
+
     return { success: true, dataUrl: canvas.toDataURL('image/png'), filename: `${name}.png` };
   } catch {
     return { success: false, error: 'Error al generar el patrón' };
