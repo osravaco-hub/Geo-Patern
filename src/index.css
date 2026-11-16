@@ -10,6 +10,7 @@
   --color-border: #7F7D7D;
   --color-accent: #61DAD8;
   --color-accent-text: #282828;
+  --color-accent-ink: #148480; /* mint oscurecido para texto sobre fondo claro */
   --color-premium: #61DAD8;
   --color-premium-light: #DDF6F5;
   --color-accent-blue: #61DAD8;
@@ -33,6 +34,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Modo oscuro (el de los mockups) */
 html.dark {
+  --color-accent-ink: #61DAD8;
   --color-background: #282828;
   --color-background-secondary: #4F4D4D;
   --color-header: #4F4D4D;
