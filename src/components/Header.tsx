@@ -24,7 +24,7 @@ export default function Header({ theme, onToggleTheme, user, onLogin, onNavigate
       <header className="sticky top-0 z-40 bg-header h-[60px] flex items-center justify-between px-4 sm:px-6 gap-3">
         <button onClick={onHome} className="flex items-center gap-2 text-left">
           <span className="text-2xl font-bold text-text font-[family-name:var(--font-body)] tracking-tight">GeoPattern</span>
-          <span className="hidden sm:inline px-2 py-0.5 rounded-full border border-accent/60 bg-accent/15 text-accent text-xs font-semibold tracking-wide">
+          <span className="hidden sm:inline px-2 py-0.5 rounded-full border border-accent/60 bg-accent/15 text-accent-ink text-xs font-semibold tracking-wide">
             STUDIO 3D
           </span>
         </button>

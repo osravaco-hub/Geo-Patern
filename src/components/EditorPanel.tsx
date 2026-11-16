@@ -172,7 +172,7 @@ export default function EditorPanel({ title, pinMode, selectedPin, onPinMode, co
               onRemove={palette.length > 1 ? () => onPalette(palette.filter((_, j) => j !== i)) : undefined} />
           ))}
           <button onClick={addColor} aria-label="Agregar color" title={`Hasta ${maxColors} colores`}
-            className="w-[55px] h-[55px] flex items-center justify-center text-border hover:text-accent transition">
+            className="w-[55px] h-[55px] flex items-center justify-center text-border hover:text-accent-ink transition">
             <Plus className="w-9 h-9" strokeWidth={1} />
           </button>
         </div>

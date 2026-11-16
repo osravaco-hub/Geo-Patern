@@ -50,7 +50,7 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full p-8 overflow-hidden max-h-[95vh] overflow-y-auto">
+      <div className="relative bg-background text-text border border-border rounded-3xl shadow-2xl max-w-4xl w-full p-8 overflow-hidden max-h-[95vh] overflow-y-auto">
         {/* Decorative gradient */}
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-premium/10 via-accent/5 to-transparent" />
 
@@ -66,7 +66,7 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-premium-light mb-4">
-              <Crown className="w-7 h-7 text-premium" />
+              <Crown className="w-7 h-7 text-accent-ink" />
             </div>
             <h2 className="text-3xl font-bold text-text font-[family-name:var(--font-display)]">
               Elige tu Plan Pro o Canjea tu Código
@@ -81,8 +81,8 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
             {/* Free Plan */}
             <div className={`rounded-2xl border-2 p-6 transition-all flex flex-col justify-between ${
               currentTier === 'free' 
-                ? 'border-accent bg-accent-light/30' 
-                : 'border-border bg-white'
+                ? 'border-accent bg-accent/10' 
+                : 'border-border bg-background'
             }`}>
               <div>
                 <div className="text-center mb-4">
@@ -104,13 +104,13 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
 
               <div>
                 {currentTier === 'free' ? (
-                  <div className="px-4 py-3 bg-accent/10 text-accent text-sm font-medium rounded-xl text-center">
+                  <div className="px-4 py-3 bg-accent/10 text-accent-ink text-sm font-medium rounded-xl text-center">
                     Plan actual
                   </div>
                 ) : (
                   <button
                     onClick={onClose}
-                    className="w-full py-3 bg-white text-text font-medium rounded-xl border border-border hover:border-accent/30 transition-all text-center"
+                    className="w-full py-3 bg-background text-text font-medium rounded-xl border border-border hover:border-accent transition-all text-center"
                   >
                     Mantener Plan Free
                   </button>
@@ -124,7 +124,7 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
                 ? 'border-premium bg-gradient-to-br from-premium/5 to-accent/5' 
                 : 'border-premium/50 bg-gradient-to-br from-premium/5 to-accent/5 shadow-lg'
             }`}>
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-premium text-white text-xs font-semibold rounded-full flex items-center gap-1">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-premium text-accent-text text-xs font-semibold rounded-full flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5" /> Recomendado
               </div>
 
@@ -132,7 +132,7 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
                 <div className="text-center mb-4">
                   <h3 className="text-xl font-bold text-text mb-1 flex items-center justify-center gap-2">
                     Pro
-                    <Crown className="w-5 h-5 text-premium" />
+                    <Crown className="w-5 h-5 text-accent-ink" />
                   </h3>
                   
                   {/* Billing toggle */}
@@ -142,8 +142,8 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
                       onClick={() => setSelectedBilling('monthly')}
                       className={`px-3 py-1 text-xs font-medium rounded-lg transition-all ${
                         selectedBilling === 'monthly'
-                          ? 'bg-premium text-white shadow'
-                          : 'bg-white/80 text-text/70 border border-border'
+                          ? 'bg-premium text-accent-text shadow'
+                          : 'bg-background text-text-secondary border border-border'
                       }`}
                     >
                       Mensual ($4.99)
@@ -153,8 +153,8 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
                       onClick={() => setSelectedBilling('lifetime')}
                       className={`px-3 py-1 text-xs font-medium rounded-lg transition-all ${
                         selectedBilling === 'lifetime'
-                          ? 'bg-premium text-white shadow'
-                          : 'bg-white/80 text-text/70 border border-border'
+                          ? 'bg-premium text-accent-text shadow'
+                          : 'bg-background text-text-secondary border border-border'
                       }`}
                     >
                       Lifetime ($29.99)
@@ -182,13 +182,13 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
 
               <div>
                 {currentTier === 'pro' ? (
-                  <div className="px-4 py-3 bg-premium/10 text-premium text-sm font-medium rounded-xl text-center">
+                  <div className="px-4 py-3 bg-premium/10 text-accent-ink text-sm font-medium rounded-xl text-center">
                     Plan Pro Activo
                   </div>
                 ) : (
                   <button
                     onClick={() => onUpgrade(selectedBilling)}
-                    className="w-full py-3 bg-gradient-to-r from-premium to-accent text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-premium/20"
+                    className="w-full py-3 bg-accent text-accent-text font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-premium/20"
                   >
                     Suscribirse a Pro ({selectedBilling === 'monthly' ? 'Mensual' : 'Lifetime'})
                   </button>
@@ -198,13 +198,13 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
           </div>
 
           {/* Promo Code Section */}
-          <div className="bg-accent-light/20 border border-border rounded-2xl p-6 mb-6">
+          <div className="bg-background-secondary border border-border rounded-2xl p-6 mb-6">
             <div className="flex items-center gap-2 mb-3">
-              <Tag className="w-5 h-5 text-accent" />
+              <Tag className="w-5 h-5 text-accent-ink" />
               <h3 className="font-bold text-text text-base">¿Tienes un código promocional?</h3>
             </div>
             <p className="text-xs text-text/60 mb-4">
-              Canjea tu código (ej. <code className="bg-white px-1.5 py-0.5 rounded border border-border font-mono text-accent font-bold">PROMO30</code> o <code className="bg-white px-1.5 py-0.5 rounded border border-border font-mono text-accent font-bold">PROMOTEST</code>) para activar acceso Pro de forma instantánea.
+              Canjea tu código (ej. <code className="bg-background px-1.5 py-0.5 rounded border border-border font-mono text-accent-ink font-bold">PROMO30</code> o <code className="bg-background px-1.5 py-0.5 rounded border border-border font-mono text-accent-ink font-bold">PROMOTEST</code>) para activar acceso Pro de forma instantánea.
             </p>
 
             <form onSubmit={handleApplyPromo} className="flex gap-3">
@@ -213,11 +213,11 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
                 placeholder="Ej: PROMO30"
-                className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-white text-text font-mono uppercase tracking-wider text-sm focus:outline-none focus:border-accent"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-background text-text placeholder:text-text/40 font-mono uppercase tracking-wider text-sm focus:outline-none focus:border-accent"
               />
               <button
                 type="submit"
-                className="px-6 py-2.5 bg-text text-white font-medium rounded-xl hover:bg-text/90 transition-all text-sm shrink-0"
+                className="px-6 py-2.5 bg-text text-background font-medium rounded-xl hover:opacity-90 transition-all text-sm shrink-0"
               >
                 Canjear
               </button>
@@ -225,7 +225,7 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
 
             {promoMessage && (
               <div className={`mt-3 p-3 rounded-xl text-sm flex items-center gap-2 ${
-                promoMessage.success ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+                promoMessage.success ? 'bg-green-500/10 text-green-600 border border-green-500/30' : 'bg-red-500/10 text-red-500 border border-red-500/30'
               }`}>
                 {promoMessage.success ? <Check className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
                 <span>{promoMessage.text}</span>

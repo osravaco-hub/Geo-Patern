@@ -8,8 +8,8 @@ export default function Footer() {
   return (
     <footer className="px-4 sm:px-6 py-6 border-t border-border/40 text-sm text-text-secondary flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
       <span><strong className="text-text font-semibold">GeoPattern</strong> · versión beta</span>
-      {FEEDBACK_URL && <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" className="hover:text-accent underline-offset-2 hover:underline">Enviar comentarios</a>}
-      <button onClick={() => setOpen(true)} className="hover:text-accent underline-offset-2 hover:underline">Privacidad y datos</button>
+      {FEEDBACK_URL && <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" className="hover:text-accent-ink underline-offset-2 hover:underline">Enviar comentarios</a>}
+      <button onClick={() => setOpen(true)} className="hover:text-accent-ink underline-offset-2 hover:underline">Privacidad y datos</button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Privacidad y datos">

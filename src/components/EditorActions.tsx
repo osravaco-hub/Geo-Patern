@@ -76,7 +76,7 @@ export default function EditorActions({ tier, remaining, onDownload, onLocked, o
                     const ok = isResolutionAvailable(tier, r);
                     return (
                       <button key={r} onClick={() => (ok ? setRes(r) : onLocked('la resolución 4K'))}
-                        className={`w-full h-10 px-3 rounded-lg border flex items-center justify-between text-lg ${res === r && ok ? 'border-accent text-accent' : 'border-text/40 text-text hover:border-accent'}`}>
+                        className={`w-full h-10 px-3 rounded-lg border flex items-center justify-between text-lg ${res === r && ok ? 'border-accent text-accent-ink' : 'border-text/40 text-text hover:border-accent'}`}>
                         <span>{RESOLUTION_LABELS[r]} · {getResolutionSize(r)} px</span>
                         {!ok && <span className="flex items-center gap-1 text-sm text-text-secondary"><Lock className="w-4 h-4" />Pro</span>}
                       </button>
@@ -110,7 +110,7 @@ export default function EditorActions({ tier, remaining, onDownload, onLocked, o
           )}
         </div>
       </div>
-      <p className="h-5 text-center text-sm text-accent" aria-live="polite">{notice || msg}</p>
+      <p className="h-5 text-center text-sm text-accent-ink" aria-live="polite">{notice || msg}</p>
     </div>
   );
 }

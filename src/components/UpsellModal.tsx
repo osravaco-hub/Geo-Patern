@@ -27,7 +27,7 @@ export default function UpsellModal({ isOpen, onClose, feature, onUpgrade, curre
 
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-premium-light mb-4">
-            <Crown className="w-7 h-7 text-premium" />
+            <Crown className="w-7 h-7 text-accent-ink" />
           </div>
           <h2 className="text-2xl font-bold text-text font-[family-name:var(--font-display)]">
             {isLiteAccess ? 'Accede al Plan Lite' : `Desbloquea ${feature}`}
@@ -101,7 +101,7 @@ export default function UpsellModal({ isOpen, onClose, feature, onUpgrade, curre
 function BenefitItem({ text }: { text: string }) {
   return (
     <div className="flex items-start gap-2">
-      <Check className="w-4 h-4 text-accent-blue shrink-0 mt-0.5" />
+      <Check className="w-4 h-4 text-accent-ink shrink-0 mt-0.5" />
       <span className="text-sm text-text">{text}</span>
     </div>
   );
