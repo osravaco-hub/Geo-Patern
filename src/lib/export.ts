@@ -58,45 +58,38 @@ export async function exportPattern(params: ExportParams): Promise<ExportResult>
     return { success: false, error: 'Esta resolución es solo para el plan Pro' };
   }
   const { width, height } = ratioDims(ratio, getResolutionSize(resolution));
-  const formatExtension = format === 'svg' ? 'svg' : 'png';
-  const name = `geopattern-${config.type}-${ratio.replace(':', 'x')}-${resolution}-${seed}-${format}`;
+  const suffix = format === 'png' || format === 'svg' ? '' : `-${format}`;
+  const name = `geopattern-${config.type}-${ratio.replace(':', 'x')}-${resolution}-${seed}${suffix}`;
 
   try {
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return { success: false, error: 'No se pudo crear el lienzo' };
-
-    // Generar el patrón base
-    generatePattern(ctx, width, height, config, seed);
-
-    // Convertir mapa según tipo de exportación
-    if (format === 'height') {
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const heightMap = generateHeightMap(imageData, width, height);
-      ctx.putImageData(heightMap, 0, 0);
-    } else if (format === 'normal') {
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const heightMap = generateHeightMap(imageData, width, height);
-      const normalMap = generateNormalMap(heightMap, width, height, 1, 1);
-      ctx.putImageData(normalMap, 0, 0);
-    } else if (format === 'alpha') {
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const alphaMap = generateAlphaMap(imageData, width, height, 128);
-      ctx.putImageData(alphaMap, 0, 0);
-    }
-
-    // Exportar según formato
+    // El SVG no necesita canvas
     if (format === 'svg') {
       const svg = generateSVG(width, height, config, seed);
       const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
       return { success: true, dataUrl: url, filename: `${name}.svg` };
     }
 
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return { success: false, error: 'No se pudo crear el lienzo' };
+
+    generatePattern(ctx, width, height, config, seed);
+
+    // Mapas PBR derivados del patrón
+    if (format !== 'png') {
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const out =
+        format === 'height' ? generateHeightMap(imageData, width, height)
+        : format === 'normal' ? generateNormalMap(generateHeightMap(imageData, width, height), width, height, 1, 1)
+        : generateAlphaMap(imageData, width, height, 128);
+      ctx.putImageData(out, 0, 0);
+    }
+
     return { success: true, dataUrl: canvas.toDataURL('image/png'), filename: `${name}.png` };
   } catch {
-    return { success: false, error: 'Error al generar el patrón' };
+    return { success: false, error: 'No se pudo generar el archivo. Prueba con una resolución menor.' };
   }
 }
 
