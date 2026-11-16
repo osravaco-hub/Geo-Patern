@@ -11,6 +11,7 @@ import { SavedPattern, savePattern } from '../lib/savedPatterns';
 import Header from '../components/Header';
 import EditorCanvas from '../components/EditorCanvas';
 import ViewModeMenu from '../components/ViewModeMenu';
+import Footer from '../components/Footer';
 import { PBRViewMode } from '../lib/pbrMaps';
 import EditorPanel from '../components/EditorPanel';
 import EditorActions from '../components/EditorActions';
@@ -40,6 +41,8 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   const [justSaved, setJustSaved] = useState(false);
   const [pinMode, setPinMode] = useState(false);
   const [viewMode, setViewMode] = useState<PBRViewMode>('color');
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState('');
   const [selPin, setSelPin] = useState<number | null>(null);
 
   const tier = LOCKING_ENABLED ? getUserTier(user) : 'pro';
@@ -75,9 +78,14 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
 
   const handleDownload = async (format: ExportFormat, resolution: ExportResolution) => {
     if (LOCKING_ENABLED && !canDownload(tier, user.downloadsToday)) return askPro('más descargas diarias');
+    setNotice('');
+    setBusy(true);
+    await new Promise(r => setTimeout(r, 30)); // deja que se muestre "Generando…" antes del trabajo pesado
     const res = await exportPattern({ config, format, resolution, ratio, seed, tier });
+    setBusy(false);
     if (!res.success || !res.dataUrl || !res.filename) {
       if (res.error?.includes('Pro')) askPro('la resolución 4K');
+      else { setNotice(res.error ?? 'No se pudo generar el archivo'); setTimeout(() => setNotice(''), 5000); }
       return;
     }
     triggerDownload(res.dataUrl, res.filename);
@@ -114,14 +122,24 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
             pinMode={pinMode && config.type === 'halftoneDots'} selectedPin={selPin}
             onPinsChange={pins => setConfig(p => ({ ...p, pins }))} onSelectPin={setSelPin} />
 
+          {config.type === 'halftoneDots' && viewMode === 'color' && (
+            <div className="space-y-1">
+              <button onClick={() => { setPinMode(m => !m); setSelPin(null); }} aria-pressed={pinMode}
+                className={`w-full h-11 rounded-xl border text-lg transition ${pinMode ? 'bg-accent text-accent-text border-accent' : 'border-text/70 text-text hover:border-accent'}`}>
+                {pinMode ? 'Pines activados · toca el lienzo' : `Colocar pines${(config.pins?.length ?? 0) > 0 ? ` (${config.pins!.length})` : ''}`}
+              </button>
+              {pinMode && <p className="text-sm text-text-secondary text-center">Toca para añadir un pin y arrastra para moverlo. Más ajustes en el panel.</p>}
+            </div>
+          )}
+
           {viewMode !== 'color' && (
             <p className="text-sm text-text-secondary text-center">
-              Vista previa del mapa. Descargar y Copiar siguen entregando el patrón en color.
+              Vista previa del mapa. Para descargarlo, elígelo en Descargar → Mapas.
             </p>
           )}
 
           <EditorActions tier={tier} remaining={LOCKING_ENABLED ? getRemainingDownloads(tier, user.downloadsToday) : Infinity}
-            onDownload={handleDownload} onLocked={askPro} onCopy={handleCopy} />
+            onDownload={handleDownload} onLocked={askPro} onCopy={handleCopy} notice={notice} busy={busy} />
         </section>
 
         {/* Derecha: controles */}
@@ -132,6 +150,8 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
             onRandom={handleRandom} onReset={handleReset} onSave={handleSave} />
         </section>
       </main>
+
+      <Footer />
 
       {/* BEGIN AADS AD UNIT 2461364 */}
       <div id="frame" className="mt-8" style={{ width: '100%', margin: 'auto', position: 'relative', zIndex: 99998 }}>

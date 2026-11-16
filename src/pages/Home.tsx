@@ -7,6 +7,7 @@ import Header from '../components/Header';
 import Hero from '../components/Hero';
 import PatternPreview from '../components/PatternPreview';
 import PricingModal from '../components/PricingModal';
+import Footer from '../components/Footer';
 import { SavedPattern, listSaved, deleteSaved } from '../lib/savedPatterns';
 
 const MAX_VISIBLE_CATEGORIES = 11;
@@ -102,6 +103,8 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
         {/* END AADS AD UNIT 2461364 */}
 
       </main>
+
+      <Footer />
 
       <PricingModal isOpen={showPlans} onClose={() => setShowPlans(false)}
         onUpgrade={() => { setUser(prev => simulatePremiumUpgrade(prev)); setShowPlans(false); }}
