@@ -67,13 +67,29 @@ export default function EditorCanvas({
     return { x: clamp(((e.clientX - r.left) / r.width) * 100), y: clamp(((e.clientY - r.top) / r.height) * 100) };
   };
 
-  // Clic en una zona vacía: añade un pin
+  // Toda la interacción pasa por la capa: el dedo mueve el pin mientras sigue presionado
+  const startDrag = (e: React.PointerEvent, index: number) => {
+    drag.current = index;
+    onSelectPin?.(index);
+    try { overlay.current?.setPointerCapture(e.pointerId); } catch { /* algunos navegadores no lo permiten */ }
+  };
+
+  // Toque en una zona vacía: añade un pin y lo deja arrastrable
   const addPin = (e: React.PointerEvent) => {
     if (!onPinsChange || pins.length >= MAX_PINS) return;
+    e.preventDefault();
     const { x, y } = toPct(e);
     onPinsChange([...pins, { x, y, w: 1 }]);
-    onSelectPin?.(pins.length);
+    startDrag(e, pins.length);
   };
+
+  const movePin = (e: React.PointerEvent) => {
+    const i = drag.current;
+    if (i === null || !onPinsChange || !pins[i]) return;
+    const { x, y } = toPct(e);
+    onPinsChange(pins.map((q, k) => (k === i ? { ...q, x, y } : q)));
+  };
+  const endDrag = () => { drag.current = null; };
 
   const active = frame(ratio);
 
@@ -96,28 +112,34 @@ export default function EditorCanvas({
 
         {/* Pines de densidad (solo en modo pines) */}
         {showPins && (
-          <div ref={overlay} className="absolute inset-0 cursor-crosshair" style={{ touchAction: 'none' }} onPointerDown={addPin}>
+          <div
+            ref={overlay}
+            className="absolute inset-0 cursor-crosshair select-none"
+            style={{ touchAction: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}
+            onPointerDown={addPin}
+            onPointerMove={movePin}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
+            onContextMenu={e => e.preventDefault()}
+          >
             {pins.map((p, i) => (
+              // Zona táctil de 44 px; el círculo visible mide 24 px
               <div
                 key={i}
                 role="button"
                 tabIndex={0}
                 aria-label={`Pin ${i + 1}`}
-                className={`absolute w-6 h-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 flex items-center justify-center text-[11px] font-semibold cursor-grab active:cursor-grabbing select-none ${selectedPin === i ? 'bg-accent border-white text-accent-text' : 'bg-black/40 border-accent text-white'}`}
+                className="absolute w-11 h-11 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
                 style={{ left: `${p.x}%`, top: `${p.y}%`, touchAction: 'none' }}
-                onPointerDown={e => { e.stopPropagation(); onSelectPin?.(i); drag.current = i; e.currentTarget.setPointerCapture(e.pointerId); }}
-                onPointerMove={e => {
-                  if (drag.current !== i || !onPinsChange) return;
-                  const { x, y } = toPct(e);
-                  onPinsChange(pins.map((q, k) => (k === i ? { ...q, x, y } : q)));
-                }}
-                onPointerUp={() => { drag.current = null; }}
+                onPointerDown={e => { e.stopPropagation(); e.preventDefault(); startDrag(e, i); }}
                 onDoubleClick={e => { e.stopPropagation(); onPinsChange?.(pins.filter((_, k) => k !== i)); onSelectPin?.(null); }}
                 onKeyDown={e => {
                   if (e.key === 'Delete' || e.key === 'Backspace') { onPinsChange?.(pins.filter((_, k) => k !== i)); onSelectPin?.(null); }
                 }}
               >
-                {i + 1}
+                <span className={`pointer-events-none w-6 h-6 rounded-full border-2 flex items-center justify-center text-[11px] font-semibold ${selectedPin === i ? 'bg-accent border-white text-accent-text' : 'bg-black/40 border-accent text-white'}`}>
+                  {i + 1}
+                </span>
               </div>
             ))}
           </div>

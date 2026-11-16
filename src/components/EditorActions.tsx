@@ -23,9 +23,11 @@ interface Props {
   onDownload: (format: ExportFormat, resolution: ExportResolution) => void;
   onLocked: (feature: string) => void;
   onCopy: (kind: 'svg' | 'css') => Promise<string>;
+  notice?: string; // mensaje externo (por ejemplo, un error al descargar)
+  busy?: boolean;
 }
 
-export default function EditorActions({ tier, remaining, onDownload, onLocked, onCopy }: Props) {
+export default function EditorActions({ tier, remaining, onDownload, onLocked, onCopy, notice, busy }: Props) {
   const dl = usePopover();
   const cp = usePopover();
   const [format, setFormat] = useState<ExportFormat>('png');
@@ -44,17 +46,26 @@ export default function EditorActions({ tier, remaining, onDownload, onLocked, o
       <div className="grid grid-cols-[1fr_1.2fr] gap-4">
         <div className="relative" ref={dl.ref}>
           <button onClick={() => { dl.setOpen(o => !o); cp.setOpen(false); }} aria-expanded={dl.open}
-            className="w-full h-[55px] rounded-xl bg-accent text-accent-text text-2xl hover:brightness-110 transition">Descargar</button>
+            disabled={busy} className="w-full h-[55px] rounded-xl bg-accent text-accent-text text-2xl hover:brightness-110 transition disabled:opacity-70">{busy ? 'Generando…' : 'Descargar'}</button>
           {dl.open && (
-            <div className="absolute bottom-full mb-3 left-0 w-[19rem] max-w-[90vw] rounded-2xl bg-background border border-border shadow-2xl p-5 space-y-4 z-30">
+            <>
+            <div className="fixed inset-0 bg-black/50 z-20 sm:hidden" onClick={() => dl.setOpen(false)} />
+            <div className="fixed inset-x-3 bottom-3 max-h-[85vh] overflow-y-auto z-30 sm:absolute sm:inset-x-auto sm:bottom-auto sm:top-full sm:mt-3 sm:left-0 sm:w-[19rem] sm:max-h-none sm:overflow-visible rounded-2xl bg-background border border-border shadow-2xl p-5 space-y-4">
               <div>
-                <p className="text-sm uppercase tracking-wider text-text-secondary mb-2">Formato</p>
+                <p className="text-sm uppercase tracking-wider text-text-secondary mb-2">Imagen</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {(['png', 'svg', 'height', 'normal', 'alpha'] as ExportFormat[]).map(f => (
-                    <button key={f} onClick={() => setFormat(f)}
-                      className={`h-10 rounded-lg border text-lg uppercase ${format === f ? 'bg-accent text-accent-text border-accent' : 'border-text/60 text-text hover:border-accent'}`}>
-                      {f === 'height' ? 'Altura' : f === 'normal' ? 'Normales' : f === 'alpha' ? 'Alpha' : f}
-                    </button>
+                  {(['png', 'svg'] as ExportFormat[]).map(f => (
+                    <button key={f} onClick={() => setFormat(f)} aria-pressed={format === f}
+                      className={`h-10 rounded-lg border text-lg uppercase ${format === f ? 'bg-accent text-accent-text border-accent' : 'border-text/60 text-text hover:border-accent'}`}>{f}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm uppercase tracking-wider text-text-secondary mb-2">Mapas (PNG)</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {([['height', 'Altura'], ['normal', 'Normales'], ['alpha', 'Alpha']] as [ExportFormat, string][]).map(([f, label]) => (
+                    <button key={f} onClick={() => setFormat(f)} aria-pressed={format === f}
+                      className={`h-10 rounded-lg border text-base ${format === f ? 'bg-accent text-accent-text border-accent' : 'border-text/60 text-text hover:border-accent'}`}>{label}</button>
                   ))}
                 </div>
               </div>
@@ -75,12 +86,13 @@ export default function EditorActions({ tier, remaining, onDownload, onLocked, o
               </div>
               <button onClick={() => { dl.setOpen(false); onDownload(format, res); }}
                 className="w-full h-11 rounded-xl bg-accent text-accent-text text-xl hover:brightness-110">
-                Descargar {format.toUpperCase()} {RESOLUTION_LABELS[res]}
+                Descargar {({ png: 'PNG', svg: 'SVG', height: 'altura', normal: 'normales', alpha: 'alpha' } as Record<string, string>)[format]} {RESOLUTION_LABELS[res]}
               </button>
               {remaining !== Infinity && (
                 <p className="text-sm text-text-secondary text-center">Te quedan {remaining} descargas hoy en el plan Free</p>
               )}
             </div>
+            </>
           )}
         </div>
 
@@ -88,14 +100,17 @@ export default function EditorActions({ tier, remaining, onDownload, onLocked, o
           <button onClick={() => { cp.setOpen(o => !o); dl.setOpen(false); }} aria-expanded={cp.open}
             className="w-full h-[55px] rounded-xl border border-text/70 text-text text-2xl hover:border-accent transition">Copiar</button>
           {cp.open && (
-            <div className="absolute bottom-full mb-3 right-0 w-56 rounded-2xl bg-background border border-border shadow-2xl p-3 space-y-2 z-30">
+            <>
+            <div className="fixed inset-0 bg-black/50 z-20 sm:hidden" onClick={() => cp.setOpen(false)} />
+            <div className="fixed inset-x-3 bottom-3 z-30 sm:absolute sm:inset-x-auto sm:bottom-auto sm:top-full sm:mt-3 sm:right-0 sm:w-56 rounded-2xl bg-background border border-border shadow-2xl p-3 space-y-2">
               <button onClick={() => doCopy('svg')} className="w-full h-11 rounded-lg border border-text/40 text-lg text-text hover:border-accent">Copiar código SVG</button>
               <button onClick={() => doCopy('css')} className="w-full h-11 rounded-lg border border-text/40 text-lg text-text hover:border-accent">Copiar código CSS</button>
             </div>
+            </>
           )}
         </div>
       </div>
-      <p className="h-5 text-center text-sm text-accent" aria-live="polite">{msg}</p>
+      <p className="h-5 text-center text-sm text-accent" aria-live="polite">{notice || msg}</p>
     </div>
   );
 }
