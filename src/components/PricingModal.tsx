@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Crown, Check, Lock, Sparkles, Tag, AlertCircle } from 'lucide-react';
 import { UserTier, UserState, getDefaultUser, saveUser } from '../lib/userTier';
 import { validateAndApplyPromoCode } from '../lib/promoCodes';
+import { initiateDodoCheckout, DODO_PRODUCTS } from '../lib/dodo';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -186,12 +187,32 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentTier, 
                     Plan Pro Activo
                   </div>
                 ) : (
-                  <button
-                    onClick={() => onUpgrade(selectedBilling)}
-                    className="w-full py-3 bg-accent text-accent-text font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-premium/20"
-                  >
-                    Suscribirse a Pro ({selectedBilling === 'monthly' ? 'Mensual' : 'Lifetime'})
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        setSelectedBilling('monthly');
+                        initiateDodoCheckout({
+                          productId: DODO_PRODUCTS.proMonthly,
+                          returnUrl: `${window.location.origin}/?payment=success&plan=monthly`,
+                        });
+                      }}
+                      className="w-full py-3 bg-accent text-accent-text font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-premium/20 mb-2"
+                    >
+                      Pro Mensual
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedBilling('lifetime');
+                        initiateDodoCheckout({
+                          productId: DODO_PRODUCTS.proLifetime,
+                          returnUrl: `${window.location.origin}/?payment=success&plan=lifetime`,
+                        });
+                      }}
+                      className="w-full py-3 bg-premium text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-premium/20"
+                    >
+                      Pro Lifetime (Pago único)
+                    </button>
+                  </>
                 )}
               </div>
             </div>

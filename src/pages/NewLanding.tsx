@@ -18,7 +18,7 @@ import PatternCanvas from '../components/PatternCanvas';
 import PricingModal from '../components/PricingModal';
 import { PatternConfig, defaultConfig, PATTERN_DEFINITIONS } from '../lib/patterns';
 import { UserState, getDefaultUser, simulateLogin, simulatePremiumUpgrade } from '../lib/userTier';
-import { createCheckoutSession, getSubscriptionPrice, calculateYearlySavings } from '../lib/stripe';
+import { initiateDodoCheckout, DODO_PRODUCTS } from '../lib/dodo';
 
 interface NewLandingProps {
   onNavigateGenerator: () => void;
@@ -44,24 +44,25 @@ export default function NewLanding({ onNavigateGenerator, onNavigateDashboard }:
       return;
     }
 
-    // Simulate Stripe checkout
+    // Use Dodo Payments checkout
     try {
-      const session = await createCheckoutSession(
-        'user-id',
-        user.email || 'user@example.com',
-        'month'
-      );
-      
-      // In production, redirect to Stripe
-      // window.location.href = session.url;
-      
-      // For demo, just upgrade the user
-      setUser(simulatePremiumUpgrade(user));
-      setShowPricing(false);
-      
-      alert('✅ ¡Suscripción completada! (Demo)\n\nEn producción, serías redirigido a Stripe Checkout.');
+      const result = await initiateDodoCheckout({
+        productId: DODO_PRODUCTS.proMonthly,
+        customerEmail: user.email || undefined,
+        returnUrl: `${window.location.origin}/?payment=success&plan=monthly`,
+      });
+
+      if (!result.success) {
+        console.warn('Dodo Checkout Fallback (simulación local / error de API):', result.error);
+        // Fallback para demo local
+        setUser(simulatePremiumUpgrade(user));
+        setShowPricing(false);
+        alert('✅ ¡Suscripción completada! (Demo / Fallback local)\n\nEn producción, serías redirigido a Dodo Payments Checkout.');
+      }
+      // Si success: true, window.location.href ya redirigió dentro de initiateDodoCheckout
     } catch (error) {
       console.error('Checkout error:', error);
+      alert('Error al iniciar el proceso de pago. Intenta de nuevo.');
     }
   };
 

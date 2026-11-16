@@ -10,12 +10,11 @@ import {
   TrendingUp,
   Settings,
 } from 'lucide-react';
-import { getDefaultUser, UserState, DOWNLOAD_LIMITS, saveUser, simulateLogin } from '../lib/userTier';
 import { getDownloadHistory, DownloadRecord, getLimitInfo } from '../lib/limits';
 import { PATTERN_DEFINITIONS } from '../lib/patterns';
-import { createPortalSession } from '../lib/stripe';
 import { useTheme } from '../hooks/useTheme';
 import Header from '../components/Header';
+import { useUserContext } from '../context/UserContext';
 
 interface DashboardProps {
   onBack: () => void;
@@ -23,12 +22,8 @@ interface DashboardProps {
 
 export default function Dashboard({ onBack }: DashboardProps) {
   const { theme, toggleTheme } = useTheme();
-  const [user, setUser] = useState<UserState>(getDefaultUser());
+  const { user } = useUserContext();
   const [history, setHistory] = useState<DownloadRecord[]>([]);
-
-  const handleLogin = (email: string) => {
-    setUser(simulateLogin(email));
-  };
 
   useEffect(() => {
     setHistory(getDownloadHistory());
@@ -52,29 +47,23 @@ export default function Dashboard({ onBack }: DashboardProps) {
     .slice(0, 5);
 
   const handleResetCounter = () => {
+    // En Clerk el límite se administra por metadatos o se limpia localmente
     const updated = { ...user, downloadsToday: 0 };
-    saveUser(updated);
     setUser(updated);
   };
 
   const handleManageSubscription = async () => {
     if (user.tier !== 'pro') {
-      alert('Solo los usuarios Premium pueden gestionar su suscripción');
+      alert('Solo los usuarios Pro pueden gestionar su suscripción');
       return;
     }
 
-    try {
-      // Simulate Stripe Customer Portal
-      const portalUrl = await createPortalSession('user-id', 'cus_placeholder');
-      
-      // In production, redirect to Stripe Portal
-      // window.location.href = portalUrl;
-      
-      alert('✅ Redirigiendo al Portal de Stripe\n\n(Demo: En producción serías redirigido a ' + portalUrl + ')');
-    } catch (error) {
-      console.error('Portal error:', error);
-      alert('Error al abrir el portal de suscripción');
-    }
+    // Dodo Payments customer portal - redirect to Dodo's portal
+    // The portal URL can be generated from the Dodo dashboard or API
+    const dodoPortalUrl = `https://${import.meta.env.VITE_DODO_PAYMENTS_ENVIRONMENT === 'live_mode' ? 'live' : 'test'}.dodopayments.com/portal`;
+    
+    alert(`Redirigiendo al portal de gestión de suscripciones de Dodo Payments...\n\n${dodoPortalUrl}`);
+    window.open(dodoPortalUrl, '_blank');
   };
 
   const getPatternLabel = (id: string): string => {
@@ -90,7 +79,6 @@ export default function Dashboard({ onBack }: DashboardProps) {
           theme={theme}
           onToggleTheme={toggleTheme}
           user={user}
-          onLogin={handleLogin}
           onNavigateDashboard={onBack}
         />
         {/* Dashboard-specific header info */}

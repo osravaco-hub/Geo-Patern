@@ -2,8 +2,8 @@ import { useState, useCallback } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import { PatternConfig, defaultConfig, PatternId, PATTERN_DEFINITIONS, generateSVG } from '../lib/patterns';
 import {
-  LOCKING_ENABLED, MAX_PALETTE_COLORS, UserState, getDefaultUser, getUserTier, canDownload,
-  getRemainingDownloads, simulateLogin, simulatePremiumUpgrade, recordDownload,
+  LOCKING_ENABLED, MAX_PALETTE_COLORS, getUserTier, canDownload,
+  getRemainingDownloads, recordDownload,
 } from '../lib/userTier';
 import { CanvasRatio, ExportFormat, ExportResolution, RATIOS, exportPattern, triggerDownload, ratioDims, svgToCss, copyText } from '../lib/export';
 import { getPatternParams, randomizeExtras } from '../lib/patternParams';
@@ -17,6 +17,7 @@ import EditorPanel from '../components/EditorPanel';
 import EditorActions from '../components/EditorActions';
 import UpsellModal from '../components/UpsellModal';
 import PricingModal from '../components/PricingModal';
+import { useUserContext } from '../context/UserContext';
 
 interface GeneratorProps {
   initialPattern?: PatternId;
@@ -30,11 +31,8 @@ const rand = (min: number, max: number, step = 1) => Math.round((min + Math.rand
 
 export default function Generator({ initialPattern, initialSaved, onHome, onNavigateDashboard }: GeneratorProps) {
   const { theme, toggleTheme } = useTheme();
+  const { user } = useUserContext();
   const startType = initialSaved?.config.type ?? initialPattern ?? defaultConfig.type;
-  const [config, setConfig] = useState<PatternConfig>(initialSaved?.config ?? baseConfig(startType));
-  const [seed, setSeed] = useState(initialSaved?.seed ?? 42);
-  const [ratio, setRatio] = useState<CanvasRatio>(initialSaved?.ratio ?? '1:1');
-  const [user, setUser] = useState<UserState>(getDefaultUser());
   const [showUpsell, setShowUpsell] = useState(false);
   const [showPlans, setShowPlans] = useState(false);
   const [upsellFeature, setUpsellFeature] = useState('');
@@ -89,7 +87,8 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
       return;
     }
     triggerDownload(res.dataUrl, res.filename);
-    setUser(prev => recordDownload(prev));
+    // recordDownload actualiza localStorage internamente
+    // El contexto se refrescará automáticamente en la próxima carga
   };
 
   const handleCopy = async (kind: 'svg' | 'css'): Promise<string> => {
@@ -103,7 +102,6 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   return (
     <div className="min-h-screen bg-background text-text transition-colors duration-300">
       <Header theme={theme} onToggleTheme={toggleTheme} user={user}
-        onLogin={email => setUser(simulateLogin(email))}
         onNavigateDashboard={onNavigateDashboard} onHome={onHome} onPlans={() => setShowPlans(true)} />
 
       <main className="grid grid-cols-1 lg:grid-cols-2">
@@ -161,9 +159,9 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
       {/* END AADS AD UNIT 2461364 */}
 
       <UpsellModal isOpen={showUpsell} onClose={() => setShowUpsell(false)} feature={upsellFeature}
-        onUpgrade={() => { setUser(prev => simulatePremiumUpgrade(prev)); setShowUpsell(false); }} currentTier={user.tier} />
+        onUpgrade={() => setShowUpsell(false)} currentTier={user.tier} />
       <PricingModal isOpen={showPlans} onClose={() => setShowPlans(false)}
-        onUpgrade={() => { setUser(prev => simulatePremiumUpgrade(prev)); setShowPlans(false); }} currentTier={user.tier} />
+        onUpgrade={() => setShowPlans(false)} currentTier={user.tier} />
     </div>
   );
 }

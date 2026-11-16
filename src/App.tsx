@@ -4,10 +4,11 @@ import Generator from './pages/Generator';
 import Dashboard from './pages/Dashboard';
 import { PatternId } from './lib/patterns';
 import { SavedPattern } from './lib/savedPatterns';
+import { UserProvider } from './context/UserContext';
 
 type Page = 'home' | 'generator' | 'dashboard';
 
-export default function App() {
+function AppContent() {
   const [page, setPage] = useState<Page>('home');
   const [pattern, setPattern] = useState<PatternId>('concentricCircles');
   const [saved, setSaved] = useState<SavedPattern | null>(null);
@@ -25,5 +26,13 @@ export default function App() {
       onSelectPattern={(id) => { setPattern(id); setSaved(null); setSession(n => n + 1); setPage('generator'); }}
       onSelectSaved={(sp) => { setPattern(sp.config.type); setSaved(sp); setSession(n => n + 1); setPage('generator'); }}
       onNavigateDashboard={() => setPage('dashboard')} />
+  );
+}
+
+export default function App() {
+  return (
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
   );
 }
