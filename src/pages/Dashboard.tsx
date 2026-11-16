@@ -10,11 +10,11 @@ import {
   TrendingUp,
   Settings,
 } from 'lucide-react';
-import { getDefaultUser, UserState, DOWNLOAD_LIMITS, saveUser, simulateLogin } from '../lib/userTier';
 import { getDownloadHistory, DownloadRecord, getLimitInfo } from '../lib/limits';
 import { PATTERN_DEFINITIONS } from '../lib/patterns';
 import { useTheme } from '../hooks/useTheme';
 import Header from '../components/Header';
+import { useUserContext } from '../context/UserContext';
 
 interface DashboardProps {
   onBack: () => void;
@@ -22,12 +22,8 @@ interface DashboardProps {
 
 export default function Dashboard({ onBack }: DashboardProps) {
   const { theme, toggleTheme } = useTheme();
-  const [user, setUser] = useState<UserState>(getDefaultUser());
+  const { user } = useUserContext();
   const [history, setHistory] = useState<DownloadRecord[]>([]);
-
-  const handleLogin = (email: string) => {
-    setUser(simulateLogin(email));
-  };
 
   useEffect(() => {
     setHistory(getDownloadHistory());
@@ -51,8 +47,8 @@ export default function Dashboard({ onBack }: DashboardProps) {
     .slice(0, 5);
 
   const handleResetCounter = () => {
+    // En Clerk el límite se administra por metadatos o se limpia localmente
     const updated = { ...user, downloadsToday: 0 };
-    saveUser(updated);
     setUser(updated);
   };
 
@@ -83,7 +79,6 @@ export default function Dashboard({ onBack }: DashboardProps) {
           theme={theme}
           onToggleTheme={toggleTheme}
           user={user}
-          onLogin={handleLogin}
           onNavigateDashboard={onBack}
         />
         {/* Dashboard-specific header info */}

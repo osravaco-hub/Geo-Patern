@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import { PATTERN_DEFINITIONS, PatternId } from '../lib/patterns';
 import { CATEGORIES, CategoryId, PATTERN_CATEGORY } from '../lib/categories';
-import { UserState, getDefaultUser, simulateLogin, simulatePremiumUpgrade } from '../lib/userTier';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import PatternPreview from '../components/PatternPreview';
 import PricingModal from '../components/PricingModal';
 import Footer from '../components/Footer';
 import { SavedPattern, listSaved, deleteSaved } from '../lib/savedPatterns';
+import { useUserContext } from '../context/UserContext';
 
 const MAX_VISIBLE_CATEGORIES = 11;
 
@@ -20,11 +20,11 @@ interface HomeProps {
 
 export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboard }: HomeProps) {
   const { theme, toggleTheme } = useTheme();
+  const { user } = useUserContext();
   const [category, setCategory] = useState<CategoryId | 'todos' | 'guardados'>('todos');
   const [saved, setSaved] = useState<SavedPattern[]>(() => listSaved());
   const [showAllCats, setShowAllCats] = useState(false);
   const [showPlans, setShowPlans] = useState(false);
-  const [user, setUser] = useState<UserState>(getDefaultUser());
 
   const gridRef = useRef<HTMLElement>(null);
   const [revealed, setRevealed] = useState(false);
@@ -47,7 +47,6 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
   return (
     <div className="min-h-screen bg-background text-text">
       <Header theme={theme} onToggleTheme={toggleTheme} user={user}
-        onLogin={(email) => setUser(simulateLogin(email))}
         onNavigateDashboard={onNavigateDashboard}
         onPlans={() => setShowPlans(true)} />
 
@@ -95,12 +94,12 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
           </section>
         )}
 
-        {/* BEGIN AADS AD UNIT 2462258 */}
-        <div id="frame" style={{ width: '100%', margin: 'auto', position: 'relative', zIndex: 99998 }}>
-          <iframe data-aa='2462258' src='//acceptable.a-ads.com/2462258/?size=Adaptive'
-            style={{ border: 0, padding: 0, width: '70%', height: 'auto', overflow: 'hidden', display: 'block', margin: 'auto' }} />
+        {/* BEGIN AADS AD UNIT 2461364 */}
+        <div id="frame" className="py-6" style={{ width: '100%', margin: 'auto', position: 'relative', zIndex: 99998 }}>
+          <iframe data-aa='2461364' src='//acceptable.a-ads.com/2461364/?size=Adaptive'
+            style={{ border: 0, padding: 0, width: '70%', height: 'auto', overflow: 'hidden', display: 'block', margin: 'auto' }}></iframe>
         </div>
-        {/* END AADS AD UNIT 2462258 */}
+        {/* END AADS AD UNIT 2461364 */}
 
       </main>
 
