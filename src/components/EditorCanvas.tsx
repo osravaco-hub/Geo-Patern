@@ -29,6 +29,7 @@ export default function EditorCanvas({
   const ref = useRef<HTMLCanvasElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
   const drag = useRef<number | null>(null);
+  const lastTap = useRef<{ i: number; t: number; x: number; y: number } | null>(null);
   const { width, height } = ratioDims(ratio, 800);
   const transparent = config.backgroundColor === 'transparent';
   const pins = config.pins ?? [];
@@ -91,6 +92,27 @@ export default function EditorCanvas({
   };
   const endDrag = () => { drag.current = null; };
 
+  const removePin = (i: number) => {
+    onPinsChange?.(pins.filter((_, k) => k !== i));
+    onSelectPin?.(null);
+    drag.current = null;
+    lastTap.current = null;
+  };
+
+  // Doble clic o doble toque sobre un pin lo borra. Se detecta aquí porque, con el puntero
+  // capturado por la capa, el navegador ya no envía el evento dblclick al pin.
+  const pressPin = (e: React.PointerEvent, i: number) => {
+    const now = Date.now();
+    const prev = lastTap.current;
+    const pin = pins[i];
+    if (prev && prev.i === i && now - prev.t < 400 && pin && prev.x === pin.x && prev.y === pin.y) {
+      removePin(i);
+      return;
+    }
+    lastTap.current = pin ? { i, t: now, x: pin.x, y: pin.y } : null;
+    startDrag(e, i);
+  };
+
   const active = frame(ratio);
 
   return (
@@ -131,10 +153,9 @@ export default function EditorCanvas({
                 aria-label={`Pin ${i + 1}`}
                 className="absolute w-11 h-11 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
                 style={{ left: `${p.x}%`, top: `${p.y}%`, touchAction: 'none' }}
-                onPointerDown={e => { e.stopPropagation(); e.preventDefault(); startDrag(e, i); }}
-                onDoubleClick={e => { e.stopPropagation(); onPinsChange?.(pins.filter((_, k) => k !== i)); onSelectPin?.(null); }}
+                onPointerDown={e => { e.stopPropagation(); e.preventDefault(); pressPin(e, i); }}
                 onKeyDown={e => {
-                  if (e.key === 'Delete' || e.key === 'Backspace') { onPinsChange?.(pins.filter((_, k) => k !== i)); onSelectPin?.(null); }
+                  if (e.key === 'Delete' || e.key === 'Backspace') removePin(i);
                 }}
               >
                 <span className={`pointer-events-none w-6 h-6 rounded-full border-2 flex items-center justify-center text-[11px] font-semibold ${selectedPin === i ? 'bg-accent border-white text-accent-text' : 'bg-black/40 border-accent text-white'}`}>

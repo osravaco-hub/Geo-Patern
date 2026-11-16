@@ -147,7 +147,7 @@ export default function EditorPanel({ title, pinMode, selectedPin, onPinMode, co
           <h3 className="text-sm uppercase tracking-wider text-text-secondary pt-3">Pines de densidad</h3>
           <Switch label="Colocar pines" on={pinMode} onToggle={() => onPinMode(!pinMode)} />
           <p className="text-sm text-text-secondary">
-            Con la opción activa, toca el lienzo para añadir un pin (hasta 12) y arrástralo para moverlo. Los puntos serán más grandes cerca de cada pin. Doble clic o Supr para quitarlo.
+            Con la opción activa, toca el lienzo para añadir un pin (hasta 12) y arrástralo para moverlo. Los puntos serán más grandes cerca de cada pin. Doble clic (o doble toque) sobre un pin, o Supr, lo quita.
           </p>
           {pin && (
             <>
