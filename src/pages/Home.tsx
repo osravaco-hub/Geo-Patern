@@ -59,7 +59,7 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
             <button key={c.id} onClick={() => setCategory(c.id)}
               className={`h-11 px-6 rounded-xl text-lg uppercase transition ${category === c.id
                 ? 'bg-accent text-accent-text'
-                : 'border border-text/70 text-text hover:border-accent hover:text-accent'}`}>
+                : 'border border-text/70 text-text hover:border-accent hover:text-accent-ink'}`}>
               {c.label}
             </button>
           ))}
