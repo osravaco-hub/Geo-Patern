@@ -94,12 +94,12 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
           </section>
         )}
 
-        {/* BEGIN AADS AD UNIT 2461364 */}
+        {/* BEGIN AADS AD UNIT 2462390 */}
         <div id="frame" className="py-6" style={{ width: '100%', margin: 'auto', position: 'relative', zIndex: 99998 }}>
-          <iframe data-aa='2461364' src='//acceptable.a-ads.com/2461364/?size=Adaptive'
+          <iframe data-aa='2462390' src='//acceptable.a-ads.com/2462390/?size=Adaptive'
             style={{ border: 0, padding: 0, width: '70%', height: 'auto', overflow: 'hidden', display: 'block', margin: 'auto' }}></iframe>
         </div>
-        {/* END AADS AD UNIT 2461364 */}
+        {/* END AADS AD UNIT 2462390 */}
 
       </main>
 
