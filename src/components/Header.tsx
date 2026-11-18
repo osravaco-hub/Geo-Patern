@@ -1,7 +1,8 @@
+import { useUser } from '@clerk/react';
 import { Moon, Sun, User } from 'lucide-react';
 import { Theme } from '../hooks/useTheme';
 import { UserState } from '../lib/userTier';
-import { Show, SignInButton, UserButton } from '@clerk/react';
+import { SignInButton, UserButton } from '@clerk/react';
 
 // TODO: reemplazar por tu enlace real de Ko-fi
 export const KOFI_URL = 'https://ko-fi.com/';
@@ -16,6 +17,8 @@ interface HeaderProps {
 }
 
 export default function Header({ theme, onToggleTheme, user, onNavigateDashboard, onHome, onPlans }: HeaderProps) {
+  const { isSignedIn } = useUser();
+
   return (
     <header className="sticky top-0 z-40 bg-header h-[60px] flex items-center justify-between px-4 sm:px-6 gap-3">
       <button onClick={onHome} className="flex items-center gap-2 text-left">
@@ -45,14 +48,7 @@ export default function Header({ theme, onToggleTheme, user, onNavigateDashboard
         </button>
 
         <div className="flex items-center gap-2">
-          <Show when="signed-out">
-            <SignInButton mode="modal">
-              <button className="w-9 h-9 rounded-full border border-text/70 text-text flex items-center justify-center hover:bg-text/10 transition" aria-label="Iniciar sesión">
-                <User className="w-4 h-4" />
-              </button>
-            </SignInButton>
-          </Show>
-          <Show when="signed-in">
+          {isSignedIn ? (
             <UserButton
               appearance={{
                 elements: {
@@ -61,7 +57,13 @@ export default function Header({ theme, onToggleTheme, user, onNavigateDashboard
                 }
               }}
             />
-          </Show>
+          ) : (
+            <SignInButton mode="modal">
+              <button className="w-9 h-9 rounded-full border border-text/70 text-text flex items-center justify-center hover:bg-text/10 transition" aria-label="Iniciar sesión">
+                <User className="w-4 h-4" />
+              </button>
+            </SignInButton>
+          )}
         </div>
       </div>
     </header>
