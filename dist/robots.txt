@@ -1,0 +1,14 @@
+# robots.txt for GeoPattern
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://geopattern.app/sitemap.xml
+
+# Disallow API routes
+Disallow: /api/
+
+# Disallow internal paths
+Disallow: /dashboard
+Disallow: /checkout
+Disallow: /webhook

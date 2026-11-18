@@ -33,6 +33,9 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   const { theme, toggleTheme } = useTheme();
   const { user } = useUserContext();
   const startType = initialSaved?.config.type ?? initialPattern ?? defaultConfig.type;
+  const [config, setConfig] = useState<PatternConfig>(initialSaved?.config ?? baseConfig(startType));
+  const [seed, setSeed] = useState(initialSaved?.seed ?? 42);
+  const [ratio, setRatio] = useState<CanvasRatio>(initialSaved?.ratio ?? '1:1');
   const [showUpsell, setShowUpsell] = useState(false);
   const [showPlans, setShowPlans] = useState(false);
   const [upsellFeature, setUpsellFeature] = useState('');
@@ -78,7 +81,7 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
     if (LOCKING_ENABLED && !canDownload(tier, user.downloadsToday)) return askPro('más descargas diarias');
     setNotice('');
     setBusy(true);
-    await new Promise(r => setTimeout(r, 30)); // deja que se muestre "Generando…" antes del trabajo pesado
+    await new Promise(r => setTimeout(r, 30));
     const res = await exportPattern({ config, format, resolution, ratio, seed, tier });
     setBusy(false);
     if (!res.success || !res.dataUrl || !res.filename) {
@@ -87,8 +90,6 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
       return;
     }
     triggerDownload(res.dataUrl, res.filename);
-    // recordDownload actualiza localStorage internamente
-    // El contexto se refrescará automáticamente en la próxima carga
   };
 
   const handleCopy = async (kind: 'svg' | 'css'): Promise<string> => {
@@ -151,12 +152,12 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
 
       <Footer />
 
-      {/* BEGIN AADS AD UNIT 2461364 */}
+      {/* BEGIN AADS AD UNIT 2462390 */}
       <div id="frame" className="mt-8" style={{ width: '100%', margin: 'auto', position: 'relative', zIndex: 99998 }}>
-        <iframe data-aa='2461364' src='//acceptable.a-ads.com/2461364/?size=Adaptive'
+        <iframe data-aa='2461364' src='//acceptable.a-ads.com/2462390/?size=Adaptive'
           style={{ border: 0, padding: 0, width: '70%', height: 'auto', overflow: 'hidden', display: 'block', margin: 'auto' }}></iframe>
       </div>
-      {/* END AADS AD UNIT 2461364 */}
+      {/* END AADS AD UNIT 2462390 */}
 
       <UpsellModal isOpen={showUpsell} onClose={() => setShowUpsell(false)} feature={upsellFeature}
         onUpgrade={() => setShowUpsell(false)} currentTier={user.tier} />

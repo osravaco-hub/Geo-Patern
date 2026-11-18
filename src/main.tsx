@@ -9,7 +9,7 @@ import { initAnalytics } from "./lib/analytics";
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY || PUBLISHABLE_KEY === "pk_test_dummy_key") {
-  console.warn("[Clerk] VITE_CLERK_PUBLISHABLE_KEY no configurada. Usando modo desarrollo sin autenticación real.");
+  console.warn("[Clerk] VITE_CLERK_PUBLISHABLE_KEY no configurada.");
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

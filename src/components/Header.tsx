@@ -1,7 +1,7 @@
 import { Moon, Sun, User } from 'lucide-react';
 import { Theme } from '../hooks/useTheme';
 import { UserState } from '../lib/userTier';
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
+import { Show, SignInButton, UserButton } from '@clerk/react';
 
 // TODO: reemplazar por tu enlace real de Ko-fi
 export const KOFI_URL = 'https://ko-fi.com/';
@@ -45,16 +45,15 @@ export default function Header({ theme, onToggleTheme, user, onNavigateDashboard
         </button>
 
         <div className="flex items-center gap-2">
-          <SignedOut>
+          <Show when="signed-out">
             <SignInButton mode="modal">
               <button className="w-9 h-9 rounded-full border border-text/70 text-text flex items-center justify-center hover:bg-text/10 transition" aria-label="Iniciar sesión">
                 <User className="w-4 h-4" />
               </button>
             </SignInButton>
-          </SignedOut>
-          <SignedIn>
+          </Show>
+          <Show when="signed-in">
             <UserButton
-              afterSignOutUrl="/"
               appearance={{
                 elements: {
                   avatarBox: "w-9 h-9",
@@ -62,7 +61,7 @@ export default function Header({ theme, onToggleTheme, user, onNavigateDashboard
                 }
               }}
             />
-          </SignedIn>
+          </Show>
         </div>
       </div>
     </header>

@@ -1,0 +1,11 @@
+name = "geopattern"
+compatibility_date = "2026-03-01"
+
+[assets]
+directory = "./dist"
+
+[vars]
+VITE_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuZ2VvcGF0dGVybi5kcGRucy5vcmck"
+VITE_DODO_PAYMENTS_ENVIRONMENT = "test_mode"
+VITE_DODO_PRODUCT_PRO_MONTHLY = "pdt_pro_monthly"
+VITE_DODO_PRODUCT_PRO_LIFETIME = "pdt_pro_lifetime"

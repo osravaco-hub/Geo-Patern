@@ -1,4 +1,4 @@
-import { useUser, useAuth } from '@clerk/clerk-react';
+import { useUser, useAuth } from '@clerk/react';
 import { UserState, getDefaultUser, saveUser, simulateProUpgrade, isPro } from '../lib/userTier';
 import { useEffect, useState } from 'react';
 
@@ -39,6 +39,8 @@ export function useClerkUser(): {
     const clerkTier = (clerkUser.publicMetadata?.tier as 'free' | 'pro') || 'free';
     const planType = (clerkUser.publicMetadata?.planType as 'monthly' | 'lifetime' | 'promo' | null) || null;
     const proUntil = (clerkUser.publicMetadata?.proUntil as number | null) || null;
+    const downloadsToday = clerkUser.publicMetadata?.downloadsToday as number | undefined || 0;
+    const totalDownloads = clerkUser.publicMetadata?.totalDownloads as number | undefined || 0;
 
     const syncedUser: UserState = {
       tier: clerkTier,
@@ -46,8 +48,8 @@ export function useClerkUser(): {
       isLoggedIn: true,
       planType,
       proUntil,
-      downloadsToday: localUser.downloadsToday || 0,
-      totalDownloads: localUser.totalDownloads || 0,
+      downloadsToday,
+      totalDownloads,
     };
 
     // Verificar expiración de pro
@@ -60,7 +62,7 @@ export function useClerkUser(): {
     setLocalUser(syncedUser);
     saveUser(syncedUser);
     setIsLoaded(true);
-  }, [clerkUser, clerkLoaded, localUser.downloadsToday, localUser.totalDownloads]);
+  }, [clerkUser, clerkLoaded]);
 
   // Función para actualizar tier localmente (se usa tras pago exitoso)
   const upgradeToPro = (planType: 'monthly' | 'lifetime' = 'monthly', durationDays?: number) => {
