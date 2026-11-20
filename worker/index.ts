@@ -1,6 +1,7 @@
 // Worker de GeoPattern: atiende /api/* (pago con Dodo Payments) y deja el resto a los archivos estáticos.
 import DodoPayments from 'dodopayments';
 import { createClerkClient, verifyToken } from '@clerk/backend';
+import { Plan, Products, processEvent } from './billing';
 
 interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
@@ -10,6 +11,8 @@ interface Env {
   DODO_PAYMENTS_WEBHOOK_KEY?: string;
   // Variables
   DODO_PAYMENTS_ENVIRONMENT?: string;
+  DODO_PRODUCT_PRO_MONTHLY?: string;
+  DODO_PRODUCT_PRO_ANNUAL?: string;
   DODO_PRODUCT_PRO_LIFETIME?: string;
 }
 
@@ -23,35 +26,55 @@ const dodoClient = (env: Env, extra: { webhookKey?: string } = {}) =>
     ...extra,
   });
 
-// ───────────────────────── POST /api/checkout ─────────────────────────
-// El navegador solo envía su sesión de Clerk. El producto, el precio y la URL de retorno los decide el servidor.
-async function handleCheckout(request: Request, env: Env): Promise<Response> {
-  if (!env.CLERK_SECRET_KEY || !env.DODO_PAYMENTS_API_KEY || !env.DODO_PRODUCT_PRO_LIFETIME) {
-    console.error('checkout: faltan secretos o variables de entorno');
-    return json({ error: 'El pago no está configurado todavía' }, 500);
-  }
+const missing = (env: Env, names: (keyof Env)[]) => names.filter(n => !env[n]);
 
+const verifyUser = async (request: Request, env: Env): Promise<string | null> => {
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (!token) return json({ error: 'Inicia sesión para comprar' }, 401);
-
-  let userId: string;
+  if (!token) return null;
   try {
-    const payload = await verifyToken(token, { secretKey: env.CLERK_SECRET_KEY }); // lanza error si no es válido
-    userId = payload.sub;
+    const payload = await verifyToken(token, { secretKey: env.CLERK_SECRET_KEY! }); // lanza error si no es válido
+    return payload.sub;
   } catch {
-    return json({ error: 'Tu sesión no es válida. Vuelve a iniciar sesión' }, 401);
+    return null;
   }
+};
+
+const productsOf = (env: Env): Products => ({
+  monthly: env.DODO_PRODUCT_PRO_MONTHLY!,
+  annual: env.DODO_PRODUCT_PRO_ANNUAL!,
+  lifetime: env.DODO_PRODUCT_PRO_LIFETIME!,
+});
+
+// ───────────────────────── POST /api/checkout ─────────────────────────
+// El navegador solo indica el plan ("monthly" | "annual" | "lifetime") y envía su sesión de Clerk.
+// El producto y la URL de retorno los decide el servidor.
+async function handleCheckout(request: Request, env: Env): Promise<Response> {
+  const lacking = missing(env, ['CLERK_SECRET_KEY', 'DODO_PAYMENTS_API_KEY', 'DODO_PRODUCT_PRO_MONTHLY', 'DODO_PRODUCT_PRO_ANNUAL', 'DODO_PRODUCT_PRO_LIFETIME']);
+  if (lacking.length) {
+    console.error('checkout: falta configurar', lacking.join(', '));
+    return json({ error: `El pago no está configurado todavía. Falta en Cloudflare: ${lacking.join(', ')}` }, 500);
+  }
+
+  const userId = await verifyUser(request, env);
+  if (!userId) {
+    return json({ error: request.headers.get('authorization') ? 'Tu sesión no es válida. Vuelve a iniciar sesión' : 'Inicia sesión para comprar' }, 401);
+  }
+
+  const body = await request.json().catch(() => ({})) as { plan?: string };
+  const plan = body.plan as Plan | undefined;
+  if (plan !== 'monthly' && plan !== 'annual' && plan !== 'lifetime') return json({ error: 'Plan no válido' }, 400);
+  const productId = productsOf(env)[plan];
 
   try {
     const clerk = createClerkClient({ secretKey: env.CLERK_SECRET_KEY });
     const user = await clerk.users.getUser(userId);
     if ((user.publicMetadata as Record<string, unknown>)?.tier === 'pro') {
-      return json({ error: 'Tu cuenta ya es Pro' }, 409);
+      return json({ error: 'Tu cuenta ya es Pro. Si quieres cambiar de plan, gestiona tu suscripción desde tu cuenta' }, 409);
     }
     const email = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress;
 
     const checkout = await dodoClient(env).checkoutSessions.create({
-      product_cart: [{ product_id: env.DODO_PRODUCT_PRO_LIFETIME, quantity: 1 }],
+      product_cart: [{ product_id: productId, quantity: 1 }],
       customer: email ? { email } : undefined,
       metadata: { clerk_user_id: userId }, // el webhook usa esto para saber a quién activar
       return_url: `${new URL(request.url).origin}/?payment=success`,
@@ -63,18 +86,41 @@ async function handleCheckout(request: Request, env: Env): Promise<Response> {
   }
 }
 
+// ───────────────────────── POST /api/portal ─────────────────────────
+// Enlace al portal de Dodo para cancelar o cambiar la forma de pago de una suscripción.
+async function handlePortal(request: Request, env: Env): Promise<Response> {
+  const lacking = missing(env, ['CLERK_SECRET_KEY', 'DODO_PAYMENTS_API_KEY']);
+  if (lacking.length) return json({ error: `Falta configurar en Cloudflare: ${lacking.join(', ')}` }, 500);
+
+  const userId = await verifyUser(request, env);
+  if (!userId) return json({ error: 'Inicia sesión' }, 401);
+
+  try {
+    const user = await createClerkClient({ secretKey: env.CLERK_SECRET_KEY }).users.getUser(userId);
+    const customerId = (user.publicMetadata as Record<string, unknown>)?.dodoCustomerId;
+    if (typeof customerId !== 'string' || !customerId) return json({ error: 'No encontramos una compra asociada a tu cuenta' }, 404);
+    const session = await dodoClient(env).customers.customerPortal.create(customerId, { return_url: new URL(request.url).origin });
+    return json({ url: session.link });
+  } catch (err) {
+    console.error('portal: error', err);
+    return json({ error: 'No se pudo abrir el portal. Inténtalo de nuevo' }, 502);
+  }
+}
+
 // ───────────────────────── POST /api/dodo-webhook ─────────────────────────
-// Única vía para activar Pro. Verifica la firma, confirma el pago con la API de Dodo y actualiza Clerk.
+// Única vía para activar Pro. Verifica la firma y delega la decisión en billing.ts.
 async function handleWebhook(request: Request, env: Env): Promise<Response> {
-  if (!env.CLERK_SECRET_KEY || !env.DODO_PAYMENTS_API_KEY || !env.DODO_PAYMENTS_WEBHOOK_KEY || !env.DODO_PRODUCT_PRO_LIFETIME) {
-    console.error('webhook: faltan secretos o variables de entorno');
+  const lacking = missing(env, ['CLERK_SECRET_KEY', 'DODO_PAYMENTS_API_KEY', 'DODO_PAYMENTS_WEBHOOK_KEY', 'DODO_PRODUCT_PRO_MONTHLY', 'DODO_PRODUCT_PRO_ANNUAL', 'DODO_PRODUCT_PRO_LIFETIME']);
+  if (lacking.length) {
+    console.error('webhook: falta configurar', lacking.join(', '));
     return new Response('No configurado', { status: 500 });
   }
 
   const raw = await request.text(); // cuerpo exacto, necesario para validar la firma
+  const dodo = dodoClient(env, { webhookKey: env.DODO_PAYMENTS_WEBHOOK_KEY });
   let event: any;
   try {
-    event = dodoClient(env, { webhookKey: env.DODO_PAYMENTS_WEBHOOK_KEY }).webhooks.unwrap(raw, {
+    event = dodo.webhooks.unwrap(raw, {
       headers: {
         'webhook-id': request.headers.get('webhook-id') ?? '',
         'webhook-signature': request.headers.get('webhook-signature') ?? '',
@@ -85,40 +131,19 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
     return new Response('Firma no válida', { status: 401 });
   }
 
-  const type: string = event?.type ?? '';
-  if (type !== 'payment.succeeded' && type !== 'refund.succeeded') return new Response('ignorado');
-  const paymentId: string | undefined = event?.data?.payment_id;
-  if (!paymentId) return new Response('sin payment_id');
-
-  // Si algo falla devolvemos 500 y Dodo reintenta el aviso más tarde
+  const clerk = createClerkClient({ secretKey: env.CLERK_SECRET_KEY });
   try {
-    const payment: any = await dodoClient(env).payments.retrieve(paymentId); // no se confía solo en el aviso
-    const userId: string | undefined = payment?.metadata?.clerk_user_id;
-    const isPro = Array.isArray(payment?.product_cart) &&
-      payment.product_cart.some((i: any) => i.product_id === env.DODO_PRODUCT_PRO_LIFETIME);
-    if (!isPro) return new Response('pago ajeno a Pro');
-    if (!userId) {
-      console.error('webhook: pago Pro sin clerk_user_id; revisar a mano', paymentId);
-      return new Response('sin usuario');
-    }
-
-    const clerk = createClerkClient({ secretKey: env.CLERK_SECRET_KEY });
-    if (type === 'payment.succeeded') {
-      if (payment.status !== 'succeeded') return new Response('pago no completado');
-      await clerk.users.updateUserMetadata(userId, {
-        publicMetadata: { tier: 'pro', planType: 'lifetime', proUntil: null, dodoPaymentId: paymentId },
-      });
-      return new Response('pro activado');
-    }
-
-    // Reembolso total: se retira Pro. Los parciales no cambian el plan.
-    if (event?.data?.is_partial === false) {
-      await clerk.users.updateUserMetadata(userId, { publicMetadata: { tier: 'free', planType: null, proUntil: null } });
-      return new Response('pro retirado');
-    }
-    return new Response('reembolso parcial');
+    const result = await processEvent(event?.type ?? '', event?.data, productsOf(env), {
+      getSubscription: id => dodo.subscriptions.retrieve(id) as any,
+      getPayment: id => dodo.payments.retrieve(id) as any,
+      getMeta: async userId => ((await clerk.users.getUser(userId)).publicMetadata ?? {}) as Record<string, unknown>,
+      setMeta: async (userId, meta) => { await clerk.users.updateUserMetadata(userId, { publicMetadata: meta }); },
+      log: (...a) => console.error('webhook:', ...a),
+    });
+    return new Response(result);
   } catch (err) {
-    console.error('webhook: error procesando', paymentId, err);
+    // Dodo reintenta el aviso más tarde cuando respondemos 500
+    console.error('webhook: error procesando', event?.type, err);
     return new Response('Error interno', { status: 500 });
   }
 }
@@ -126,9 +151,11 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const { pathname } = new URL(request.url);
-    if (pathname === '/api/checkout' || pathname === '/api/dodo-webhook') {
+    if (pathname === '/api/checkout' || pathname === '/api/portal' || pathname === '/api/dodo-webhook') {
       if (request.method !== 'POST') return new Response('Método no permitido', { status: 405, headers: { Allow: 'POST' } });
-      return pathname === '/api/checkout' ? handleCheckout(request, env) : handleWebhook(request, env);
+      if (pathname === '/api/checkout') return handleCheckout(request, env);
+      if (pathname === '/api/portal') return handlePortal(request, env);
+      return handleWebhook(request, env);
     }
     if (pathname.startsWith('/api/')) return json({ error: 'No encontrado' }, 404);
     return env.ASSETS.fetch(request);
