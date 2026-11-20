@@ -11,7 +11,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
 
   if (!isOpen) return null;
 
-  const binanceInfo = "123456789 (Binance Pay ID)";
+  const binanceInfo = "Alias: Osravaco";
   const airtmLink = "https://airtm.me/osravaco";
   const airtmInfo = "donaciones@geopattern.studio (o airtm.me/osravaco)";
 
