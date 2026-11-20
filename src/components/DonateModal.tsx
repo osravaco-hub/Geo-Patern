@@ -48,7 +48,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
             </div>
             
             <div className="w-32 h-32 bg-white p-2 rounded-xl border border-border flex items-center justify-center overflow-hidden">
-              <img src="/Qr Binance.jfif" alt="QR Binance Pay" className="w-full h-full object-contain" />
+              <img src="/Qr Binance.jpg" alt="QR Binance Pay" className="w-full h-full object-contain" />
             </div>
 
             <div className="w-full flex items-center justify-between bg-black/5 dark:bg-white/5 p-2 rounded-xl border border-border">
