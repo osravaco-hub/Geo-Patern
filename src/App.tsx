@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import { PatternId } from './lib/patterns';
 import { SavedPattern } from './lib/savedPatterns';
 import { UserProvider } from './context/UserContext';
+import PaymentBanner from './components/PaymentBanner';
 
 type Page = 'home' | 'generator' | 'dashboard';
 
@@ -32,6 +33,7 @@ function AppContent() {
 export default function App() {
   return (
     <UserProvider>
+      <PaymentBanner />
       <AppContent />
     </UserProvider>
   );
