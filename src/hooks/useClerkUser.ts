@@ -37,7 +37,7 @@ export function useClerkUser(): {
     }
 
     const clerkTier = (clerkUser.publicMetadata?.tier as 'free' | 'pro') || 'free';
-    const planType = (clerkUser.publicMetadata?.planType as 'monthly' | 'lifetime' | 'promo' | null) || null;
+    const planType = (clerkUser.publicMetadata?.planType as 'monthly' | 'annual' | 'lifetime' | 'promo' | null) || null;
     const proUntil = (clerkUser.publicMetadata?.proUntil as number | null) || null;
 
     const syncedUser: UserState = {
