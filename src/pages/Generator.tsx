@@ -31,7 +31,7 @@ const rand = (min: number, max: number, step = 1) => Math.round((min + Math.rand
 
 export default function Generator({ initialPattern, initialSaved, onHome, onNavigateDashboard }: GeneratorProps) {
   const { theme, toggleTheme } = useTheme();
-  const { user } = useUserContext();
+  const { user, registerDownload } = useUserContext();
   const startType = initialSaved?.config.type ?? initialPattern ?? defaultConfig.type;
   const [config, setConfig] = useState<PatternConfig>(initialSaved?.config ?? baseConfig(startType));
   const [seed, setSeed] = useState(initialSaved?.seed ?? 42);
@@ -90,6 +90,7 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
       return;
     }
     triggerDownload(res.dataUrl, res.filename);
+    registerDownload();
   };
 
   const handleCopy = async (kind: 'svg' | 'css'): Promise<string> => {
@@ -160,9 +161,8 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
       {/* END AADS AD UNIT 2462390 */}
 
       <UpsellModal isOpen={showUpsell} onClose={() => setShowUpsell(false)} feature={upsellFeature}
-        onUpgrade={() => setShowUpsell(false)} currentTier={user.tier} />
-      <PricingModal isOpen={showPlans} onClose={() => setShowPlans(false)}
-        onUpgrade={() => setShowPlans(false)} currentTier={user.tier} />
+        onUpgrade={() => { setShowUpsell(false); setShowPlans(true); }} currentTier={user.tier} />
+      <PricingModal isOpen={showPlans} onClose={() => setShowPlans(false)} currentTier={user.tier} />
     </div>
   );
 }

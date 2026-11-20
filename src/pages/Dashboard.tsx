@@ -8,7 +8,6 @@ import {
   BarChart3,
   Clock,
   TrendingUp,
-  Settings,
 } from 'lucide-react';
 import { getDownloadHistory, DownloadRecord, getLimitInfo } from '../lib/limits';
 import { PATTERN_DEFINITIONS } from '../lib/patterns';
@@ -45,24 +44,6 @@ export default function Dashboard({ onBack }: DashboardProps) {
   const topPatterns = Object.entries(patternCounts)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5);
-
-  const handleResetCounter = () => {
-    const updated = { ...user, downloadsToday: 0 };
-    // @ts-ignore (need to update context if we want to reset)
-    // setUser(updated);
-  };
-
-  const handleManageSubscription = async () => {
-    if (user.tier !== 'pro') {
-      alert('Solo los usuarios Pro pueden gestionar su suscripción');
-      return;
-    }
-
-    const dodoPortalUrl = `https://${import.meta.env.VITE_DODO_PAYMENTS_ENVIRONMENT === 'live_mode' ? 'live' : 'test'}.dodopayments.com/portal`;
-    
-    alert(`Redirigiendo al portal de gestión de suscripciones de Dodo Payments...\n\n${dodoPortalUrl}`);
-    window.open(dodoPortalUrl, '_blank');
-  };
 
   const getPatternLabel = (id: string): string => {
     const def = PATTERN_DEFINITIONS.find((p) => p.id === id);
@@ -125,13 +106,9 @@ export default function Dashboard({ onBack }: DashboardProps) {
             <p className="text-3xl font-bold">{user.totalDownloads}</p>
           </div>
 
-          <div className="bg-background-secondary p-6 rounded-2xl border border-border flex flex-col justify-center gap-3">
-             <button
-              onClick={handleManageSubscription}
-              className="w-full py-2.5 bg-accent text-white font-medium rounded-xl hover:opacity-90 transition-all text-sm"
-            >
-              Gestionar suscripción
-            </button>
+          <div className="bg-background-secondary p-6 rounded-2xl border border-border flex flex-col justify-center gap-1 text-center">
+            <h3 className="font-medium text-text/70">Plan</h3>
+            <p className="text-2xl font-bold">{user.tier === 'pro' ? 'Pro de por vida' : 'Free'}</p>
           </div>
         </section>
         

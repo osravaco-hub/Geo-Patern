@@ -105,9 +105,7 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
 
       <Footer />
 
-      <PricingModal isOpen={showPlans} onClose={() => setShowPlans(false)}
-        onUpgrade={() => setShowPlans(false)}
-        currentTier={user.tier} />
+      <PricingModal isOpen={showPlans} onClose={() => setShowPlans(false)} currentTier={user.tier} />
     </div>
   );
 }
