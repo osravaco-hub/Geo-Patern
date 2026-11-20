@@ -10,9 +10,11 @@ not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
 
 # Variables NO secretas. Al pasar a claves reales cambia DODO_PAYMENTS_ENVIRONMENT a "live_mode"
-# y DODO_PRODUCT_PRO_LIFETIME por el ID del producto en modo live.
+# y los tres DODO_PRODUCT_PRO_* por los IDs de los productos en modo live.
 [vars]
 DODO_PAYMENTS_ENVIRONMENT = "test_mode"
+DODO_PRODUCT_PRO_MONTHLY = "pdt_0Ns38ukyRDuUlj8RzMy5N"
+DODO_PRODUCT_PRO_ANNUAL = "pdt_0NsBl4L6oskYPZIlhH18l"
 DODO_PRODUCT_PRO_LIFETIME = "pdt_0Ns38PNzRC9xqa61fkXC1"
 
 # SECRETOS (no van aquí): CLERK_SECRET_KEY, DODO_PAYMENTS_API_KEY, DODO_PAYMENTS_WEBHOOK_KEY
