@@ -11,7 +11,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
 
   if (!isOpen) return null;
 
-  const binanceInfo = "Alias: Osravaco";
+  const binanceInfo = "Osravaco";
   const airtmLink = "https://airtm.me/osravaco";
   const airtmInfo = "donaciones@geopattern.studio (o airtm.me/osravaco)";
 
