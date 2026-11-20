@@ -14,6 +14,8 @@ import { PATTERN_DEFINITIONS } from '../lib/patterns';
 import { useTheme } from '../hooks/useTheme';
 import Header from '../components/Header';
 import { useUserContext } from '../context/UserContext';
+import { useAuth } from '@clerk/react';
+import { PLAN_LABELS, openBillingPortal } from '../lib/checkout';
 
 interface DashboardProps {
   onBack: () => void;
@@ -22,6 +24,20 @@ interface DashboardProps {
 export default function Dashboard({ onBack }: DashboardProps) {
   const { theme, toggleTheme } = useTheme();
   const { user } = useUserContext();
+  const { getToken } = useAuth();
+  const [portalBusy, setPortalBusy] = useState(false);
+  const [portalError, setPortalError] = useState('');
+
+  const handlePortal = async () => {
+    setPortalError('');
+    setPortalBusy(true);
+    const token = await getToken();
+    const res = token ? await openBillingPortal(token) : { error: 'Vuelve a iniciar sesión' };
+    setPortalBusy(false);
+    if (res.url) window.location.href = res.url;
+    else setPortalError(res.error ?? 'No se pudo abrir el portal');
+  };
+  const isSubscription = user.tier === 'pro' && (user.planType === 'monthly' || user.planType === 'annual');
   const [history, setHistory] = useState<DownloadRecord[]>([]);
 
   useEffect(() => {
@@ -106,9 +122,19 @@ export default function Dashboard({ onBack }: DashboardProps) {
             <p className="text-3xl font-bold">{user.totalDownloads}</p>
           </div>
 
-          <div className="bg-background-secondary p-6 rounded-2xl border border-border flex flex-col justify-center gap-1 text-center">
+          <div className="bg-background-secondary p-6 rounded-2xl border border-border flex flex-col justify-center gap-2 text-center">
             <h3 className="font-medium text-text/70">Plan</h3>
-            <p className="text-2xl font-bold">{user.tier === 'pro' ? 'Pro de por vida' : 'Free'}</p>
+            <p className="text-2xl font-bold">{user.tier === 'pro' ? (PLAN_LABELS[user.planType ?? ''] ?? 'Pro') : 'Free'}</p>
+            {isSubscription && user.proUntil && (
+              <p className="text-sm text-text-secondary">Próxima renovación: {new Date(user.proUntil - 3 * 86400000).toLocaleDateString('es')}</p>
+            )}
+            {isSubscription && (
+              <button onClick={handlePortal} disabled={portalBusy}
+                className="w-full py-2.5 bg-accent text-accent-text font-medium rounded-xl hover:opacity-90 transition-all text-sm disabled:opacity-70">
+                {portalBusy ? 'Abriendo…' : 'Gestionar suscripción'}
+              </button>
+            )}
+            {portalError && <p role="alert" className="text-sm text-red-500">{portalError}</p>}
           </div>
         </section>
         
