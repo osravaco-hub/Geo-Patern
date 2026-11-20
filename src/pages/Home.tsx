@@ -21,7 +21,19 @@ interface HomeProps {
 export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboard }: HomeProps) {
   const { theme, toggleTheme } = useTheme();
   const { user } = useUserContext();
-  const [category, setCategory] = useState<CategoryId | 'todos' | 'guardados'>('todos');
+  // La categoría elegida se recuerda para que, al volver con "atrás", la galería siga igual
+  const [category, setCategory] = useState<CategoryId | 'todos' | 'guardados'>(() => {
+    try {
+      const v = sessionStorage.getItem('gp_category');
+      const valid = v === 'todos' || (v === 'guardados' && listSaved().length > 0) || CATEGORIES.some(c => c.id === v);
+      return valid ? (v as CategoryId | 'todos' | 'guardados') : 'todos';
+    } catch {
+      return 'todos';
+    }
+  });
+  useEffect(() => {
+    try { sessionStorage.setItem('gp_category', category); } catch { /* sin almacenamiento */ }
+  }, [category]);
   const [saved, setSaved] = useState<SavedPattern[]>(() => listSaved());
   const [showAllCats, setShowAllCats] = useState(false);
   const [showPlans, setShowPlans] = useState(false);
