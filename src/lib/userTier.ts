@@ -5,7 +5,7 @@ export interface UserState {
   tier: UserTier;
   email: string | null;
   isLoggedIn: boolean;
-  planType?: 'monthly' | 'lifetime' | 'promo' | null;
+  planType?: 'monthly' | 'annual' | 'lifetime' | 'promo' | null;
   proUntil?: number | null; // Timestamp UNIX in milliseconds, or null/undefined for lifetime/promo permanent
   downloadsToday: number;
   totalDownloads: number;
