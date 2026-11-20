@@ -1,46 +1,44 @@
 import { useUser, useAuth } from '@clerk/react';
-import { UserState, getDefaultUser, saveUser, simulateProUpgrade, isPro } from '../lib/userTier';
-import { useEffect, useState } from 'react';
+import { UserState, getDefaultUser, saveUser, recordDownload } from '../lib/userTier';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+export type PaymentStatus = 'idle' | 'checking' | 'success' | 'timeout';
 
 /**
- * Hook que sincroniza el estado de Clerk con nuestro UserState local.
- * - Usa Clerk para autenticación real
- * - Mantiene userTier en localStorage para límites offline y metadatos extra
- * - Sincroniza el tier 'pro' desde Clerk metadata (publicMetadata.tier)
+ * Sincroniza el estado de Clerk con nuestro UserState local.
+ * - El plan (tier) SOLO viene de Clerk (publicMetadata). Únicamente el servidor puede modificarlo,
+ *   a través del webhook de Dodo: el navegador no puede concederse Pro.
+ * - Los contadores de descargas viven en localStorage.
  */
 export function useClerkUser(): {
   user: UserState;
   isLoaded: boolean;
   signOut: () => void;
+  registerDownload: () => void;
+  paymentStatus: PaymentStatus;
+  dismissPayment: () => void;
 } {
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
   const { signOut } = useAuth();
   const [localUser, setLocalUser] = useState<UserState>(getDefaultUser);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
+  const polled = useRef(false);
 
   useEffect(() => {
     if (!clerkLoaded) return;
 
     if (!clerkUser) {
-      // Usuario no autenticado en Clerk -> free tier
-      const freeUser: UserState = {
-        ...getDefaultUser(),
-        tier: 'free',
-        email: null,
-        isLoggedIn: false,
-      };
+      const freeUser: UserState = { ...getDefaultUser(), tier: 'free', email: null, isLoggedIn: false };
       setLocalUser(freeUser);
       saveUser(freeUser);
       setIsLoaded(true);
       return;
     }
 
-    // Usuario autenticado en Clerk
     const clerkTier = (clerkUser.publicMetadata?.tier as 'free' | 'pro') || 'free';
     const planType = (clerkUser.publicMetadata?.planType as 'monthly' | 'lifetime' | 'promo' | null) || null;
     const proUntil = (clerkUser.publicMetadata?.proUntil as number | null) || null;
-    const downloadsToday = clerkUser.publicMetadata?.downloadsToday as number | undefined || 0;
-    const totalDownloads = clerkUser.publicMetadata?.totalDownloads as number | undefined || 0;
 
     const syncedUser: UserState = {
       tier: clerkTier,
@@ -48,11 +46,10 @@ export function useClerkUser(): {
       isLoggedIn: true,
       planType,
       proUntil,
-      downloadsToday,
-      totalDownloads,
+      downloadsToday: localUser.downloadsToday || 0,
+      totalDownloads: localUser.totalDownloads || 0,
     };
 
-    // Verificar expiración de pro
     if (syncedUser.tier === 'pro' && syncedUser.proUntil && syncedUser.proUntil <= Date.now()) {
       syncedUser.tier = 'free';
       syncedUser.planType = null;
@@ -62,21 +59,30 @@ export function useClerkUser(): {
     setLocalUser(syncedUser);
     saveUser(syncedUser);
     setIsLoaded(true);
-  }, [clerkUser, clerkLoaded]);
+  }, [clerkUser, clerkLoaded, localUser.downloadsToday, localUser.totalDownloads]);
 
-  // Función para actualizar tier localmente (se usa tras pago exitoso)
-  const upgradeToPro = (planType: 'monthly' | 'lifetime' = 'monthly', durationDays?: number) => {
-    setLocalUser(prev => {
-      const updated = simulateProUpgrade(prev, planType, durationDays);
-      saveUser(updated);
-      return updated;
-    });
-  };
+  // Al volver de Dodo (?payment=success) se espera a que el webhook active Pro en Clerk
+  useEffect(() => {
+    if (!clerkLoaded || polled.current) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') !== 'success') return;
+    polled.current = true;
+    window.history.replaceState({}, '', window.location.pathname);
+    if (!clerkUser) return;
 
-  return {
-    user: localUser,
-    isLoaded,
-    signOut,
-    upgradeToPro,
-  };
+    if (clerkUser.publicMetadata?.tier === 'pro') { setPaymentStatus('success'); return; }
+    setPaymentStatus('checking');
+    let tries = 0;
+    const id = setInterval(async () => {
+      tries++;
+      try { await clerkUser.reload(); } catch { /* se reintenta */ }
+      if (clerkUser.publicMetadata?.tier === 'pro') { clearInterval(id); setPaymentStatus('success'); }
+      else if (tries >= 12) { clearInterval(id); setPaymentStatus('timeout'); }
+    }, 2500);
+  }, [clerkLoaded, clerkUser]);
+
+  const registerDownload = useCallback(() => setLocalUser(prev => recordDownload(prev)), []);
+  const dismissPayment = useCallback(() => setPaymentStatus('idle'), []);
+
+  return { user: localUser, isLoaded, signOut, registerDownload, paymentStatus, dismissPayment };
 }
