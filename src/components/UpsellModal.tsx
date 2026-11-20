@@ -1,6 +1,6 @@
 import { X, Crown, Check } from 'lucide-react';
 import { UserTier } from '../lib/userTier';
-import { PRO_PRICE_LABEL } from '../lib/checkout';
+import { PLANS } from '../lib/checkout';
 
 interface UpsellModalProps {
   isOpen: boolean;
@@ -32,8 +32,9 @@ export default function UpsellModal({ isOpen, onClose, feature, onUpgrade }: Ups
           ))}
         </ul>
         <div className="rounded-2xl border border-border bg-background-secondary text-center py-4 mb-4">
-          <span className="text-3xl font-bold">{PRO_PRICE_LABEL}</span>
-          <span className="text-text-secondary"> · pago único</span>
+          <span className="text-text-secondary">Desde </span>
+          <span className="text-3xl font-bold">{PLANS[0].price}</span>
+          <span className="text-text-secondary"> /mes · o plan anual y vitalicio</span>
         </div>
         <button onClick={onUpgrade} className="w-full py-3 bg-accent text-accent-text font-semibold rounded-xl hover:opacity-90 transition">Ver Pro</button>
         <button onClick={onClose} className="w-full py-2 mt-2 text-text-secondary hover:text-text transition">Ahora no</button>
