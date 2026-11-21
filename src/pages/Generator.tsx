@@ -11,6 +11,7 @@ import { SavedPattern, savePattern } from '../lib/savedPatterns';
 import Header from '../components/Header';
 import EditorCanvas from '../components/EditorCanvas';
 import ViewModeMenu from '../components/ViewModeMenu';
+import Footer from '../components/Footer';
 import FeedbackModal from '../components/FeedbackModal';
 import { PBRViewMode } from '../lib/pbrMaps';
 import EditorPanel from '../components/EditorPanel';

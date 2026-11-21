@@ -6,6 +6,7 @@ import Header from '../components/Header';
 import Hero from '../components/Hero';
 import PatternPreview from '../components/PatternPreview';
 import PricingModal from '../components/PricingModal';
+import Footer from '../components/Footer';
 import FeedbackModal from '../components/FeedbackModal';
 import { SavedPattern, listSaved, deleteSaved } from '../lib/savedPatterns';
 import { useUserContext } from '../context/UserContext';
