@@ -37,9 +37,9 @@ export default function Header({ theme, onToggleTheme, user: _user, onNavigateDa
             className="hidden sm:flex h-9 px-6 items-center rounded-lg border border-text/70 text-text text-sm hover:bg-text/10 transition">
             Donar
           </button>
-          <button disabled title="Próximamente: complemento para Figma"
+          <button disabled title="Próximamente"
             className="hidden md:block h-9 px-4 rounded-lg bg-border text-white text-sm cursor-not-allowed">
-            Figma
+            Conectores
           </button>
 
           <button onClick={onToggleTheme} aria-label="Cambiar modo claro/oscuro"
