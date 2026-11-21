@@ -6,7 +6,7 @@ import Header from '../components/Header';
 import Hero from '../components/Hero';
 import PatternPreview from '../components/PatternPreview';
 import PricingModal from '../components/PricingModal';
-import Footer from '../components/Footer';
+import FeedbackModal from '../components/FeedbackModal';
 import { SavedPattern, listSaved, deleteSaved } from '../lib/savedPatterns';
 import { useUserContext } from '../context/UserContext';
 
@@ -37,6 +37,7 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
   const [saved, setSaved] = useState<SavedPattern[]>(() => listSaved());
   const [showAllCats, setShowAllCats] = useState(false);
   const [showPlans, setShowPlans] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const gridRef = useRef<HTMLElement>(null);
   const [revealed, setRevealed] = useState(false);
@@ -115,7 +116,8 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
 
       </main>
 
-      <Footer />
+      <Footer onOpenFeedback={() => setFeedbackOpen(true)} />
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
 
       <PricingModal isOpen={showPlans} onClose={() => setShowPlans(false)} currentTier={user.tier} />
     </div>

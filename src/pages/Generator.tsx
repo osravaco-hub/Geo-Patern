@@ -11,7 +11,7 @@ import { SavedPattern, savePattern } from '../lib/savedPatterns';
 import Header from '../components/Header';
 import EditorCanvas from '../components/EditorCanvas';
 import ViewModeMenu from '../components/ViewModeMenu';
-import Footer from '../components/Footer';
+import FeedbackModal from '../components/FeedbackModal';
 import { PBRViewMode } from '../lib/pbrMaps';
 import EditorPanel from '../components/EditorPanel';
 import EditorActions from '../components/EditorActions';
@@ -38,6 +38,7 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   const [ratio, setRatio] = useState<CanvasRatio>(initialSaved?.ratio ?? '1:1');
   const [showUpsell, setShowUpsell] = useState(false);
   const [showPlans, setShowPlans] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [upsellFeature, setUpsellFeature] = useState('');
   const [justSaved, setJustSaved] = useState(false);
   const [pinMode, setPinMode] = useState(false);
@@ -151,14 +152,15 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
         </section>
       </main>
 
-            {/* BEGIN AADS AD UNIT 2462390 */}
+      <Footer onOpenFeedback={() => setFeedbackOpen(true)} />
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+
+      {/* BEGIN AADS AD UNIT 2462390 */}
       <div id="frame" className="mt-8" style={{ width: '100%', margin: 'auto', position: 'relative', zIndex: 1 }}>
         <iframe data-aa='2462390' src='//acceptable.a-ads.com/2462390/?size=Adaptive'
           style={{ border: 0, padding: 0, width: '70%', height: 'auto', overflow: 'hidden', display: 'block', margin: 'auto' }}></iframe>
       </div>
       {/* END AADS AD UNIT 2462390 */}
-      
-      <Footer />
 
       <UpsellModal isOpen={showUpsell} onClose={() => setShowUpsell(false)} feature={upsellFeature}
         onUpgrade={() => { setShowUpsell(false); setShowPlans(true); }} currentTier={user.tier} />
