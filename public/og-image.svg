@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#09090b" />
+      <stop offset="100%" stop-color="#18181b" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)" />
+  
+  <!-- Decorative Grid Pattern -->
+  <g stroke="#27272a" stroke-width="1" opacity="0.4">
+    <path d="M 0,105 L 1200,105 M 0,210 L 1200,210 M 0,315 L 1200,315 M 0,420 L 1200,420 M 0,525 L 1200,525" />
+    <path d="M 200,0 L 200,630 M 400,0 L 400,630 M 600,0 L 600,630 M 800,0 L 800,630 M 1000,0 L 1000,630" />
+  </g>
+
+  <!-- Central geometric emblem -->
+  <g transform="translate(600, 240)">
+    <polygon points="0,-90 78,-45 78,45 0,90 -78,45 -78,-45" fill="none" stroke="url(#accent)" stroke-width="6" />
+    <polygon points="0,-50 43,-25 43,25 0,50 -43,25 -43,-25" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.8" />
+    <circle cx="0" cy="0" r="16" fill="url(#accent)" />
+  </g>
+
+  <!-- Title and Subtitle -->
+  <text x="600" y="420" font-family="Barlow, sans-serif" font-weight="700" font-size="64" fill="#ffffff" text-anchor="middle" letter-spacing="-1">GeoPattern Studio 3D</text>
+  <text x="600" y="475" font-family="Barlow, sans-serif" font-weight="400" font-size="28" fill="#a1a1aa" text-anchor="middle">Generador de Patrones Geométricos y Texturas PBR sin Costuras</text>
+  
+  <!-- Badge -->
+  <rect x="510" y="520" width="180" height="40" rx="20" fill="#6366f1" opacity="0.2" stroke="#6366f1" stroke-width="2" />
+  <text x="600" y="546" font-family="Barlow, sans-serif" font-weight="600" font-size="16" fill="#818cf8" text-anchor="middle" letter-spacing="1">SVG &bull; PBR &bull; 3D</text>
+</svg>
