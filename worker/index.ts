@@ -52,24 +52,26 @@ async function handleCheckout(request: Request, env: Env): Promise<Response> {
   const lacking = missing(env, ['CLERK_SECRET_KEY', 'DODO_PAYMENTS_API_KEY', 'DODO_PRODUCT_PRO_MONTHLY', 'DODO_PRODUCT_PRO_ANNUAL', 'DODO_PRODUCT_PRO_LIFETIME']);
   if (lacking.length) {
     console.error('checkout: falta configurar', lacking.join(', '));
-    return json({ error: `El pago no está configurado todavía. Falta en Cloudflare: ${lacking.join(', ')}` }, 500);
+    return json({ code: 'not_configured', detail: lacking.join(', '), error: `El pago no está configurado todavía. Falta en Cloudflare: ${lacking.join(', ')}` }, 500);
   }
 
   const userId = await verifyUser(request, env);
   if (!userId) {
-    return json({ error: request.headers.get('authorization') ? 'Tu sesión no es válida. Vuelve a iniciar sesión' : 'Inicia sesión para comprar' }, 401);
+    return json(request.headers.get('authorization')
+      ? { code: 'invalid_session', error: 'Tu sesión no es válida. Vuelve a iniciar sesión' }
+      : { code: 'login_required', error: 'Inicia sesión para comprar' }, 401);
   }
 
   const body = await request.json().catch(() => ({})) as { plan?: string };
   const plan = body.plan as Plan | undefined;
-  if (plan !== 'monthly' && plan !== 'annual' && plan !== 'lifetime') return json({ error: 'Plan no válido' }, 400);
+  if (plan !== 'monthly' && plan !== 'annual' && plan !== 'lifetime') return json({ code: 'invalid_plan', error: 'Plan no válido' }, 400);
   const productId = productsOf(env)[plan];
 
   try {
     const clerk = createClerkClient({ secretKey: env.CLERK_SECRET_KEY });
     const user = await clerk.users.getUser(userId);
     if ((user.publicMetadata as Record<string, unknown>)?.tier === 'pro') {
-      return json({ error: 'Tu cuenta ya es Pro. Si quieres cambiar de plan, gestiona tu suscripción desde tu cuenta' }, 409);
+      return json({ code: 'already_pro', error: 'Tu cuenta ya es Pro. Si quieres cambiar de plan, gestiona tu suscripción desde tu cuenta' }, 409);
     }
     const email = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress;
 
@@ -82,7 +84,7 @@ async function handleCheckout(request: Request, env: Env): Promise<Response> {
     return json({ checkout_url: checkout.checkout_url });
   } catch (err) {
     console.error('checkout: error', err);
-    return json({ error: 'No se pudo crear el pago. Inténtalo de nuevo en unos minutos' }, 502);
+    return json({ code: 'checkout_failed', error: 'No se pudo crear el pago. Inténtalo de nuevo en unos minutos' }, 502);
   }
 }
 
@@ -90,20 +92,20 @@ async function handleCheckout(request: Request, env: Env): Promise<Response> {
 // Enlace al portal de Dodo para cancelar o cambiar la forma de pago de una suscripción.
 async function handlePortal(request: Request, env: Env): Promise<Response> {
   const lacking = missing(env, ['CLERK_SECRET_KEY', 'DODO_PAYMENTS_API_KEY']);
-  if (lacking.length) return json({ error: `Falta configurar en Cloudflare: ${lacking.join(', ')}` }, 500);
+  if (lacking.length) return json({ code: 'not_configured', detail: lacking.join(', '), error: `Falta configurar en Cloudflare: ${lacking.join(', ')}` }, 500);
 
   const userId = await verifyUser(request, env);
-  if (!userId) return json({ error: 'Inicia sesión' }, 401);
+  if (!userId) return json({ code: 'login_required', error: 'Inicia sesión' }, 401);
 
   try {
     const user = await createClerkClient({ secretKey: env.CLERK_SECRET_KEY }).users.getUser(userId);
     const customerId = (user.publicMetadata as Record<string, unknown>)?.dodoCustomerId;
-    if (typeof customerId !== 'string' || !customerId) return json({ error: 'No encontramos una compra asociada a tu cuenta' }, 404);
+    if (typeof customerId !== 'string' || !customerId) return json({ code: 'portal_not_found', error: 'No encontramos una compra asociada a tu cuenta' }, 404);
     const session = await dodoClient(env).customers.customerPortal.create(customerId, { return_url: new URL(request.url).origin });
     return json({ url: session.link });
   } catch (err) {
     console.error('portal: error', err);
-    return json({ error: 'No se pudo abrir el portal. Inténtalo de nuevo' }, 502);
+    return json({ code: 'portal_failed', error: 'No se pudo abrir el portal. Inténtalo de nuevo' }, 502);
   }
 }
 
