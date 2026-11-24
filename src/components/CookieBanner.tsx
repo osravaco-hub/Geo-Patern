@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { X, Cookie, Shield, FileText } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 export default function CookieBanner() {
+  const { t } = useI18n();
   const [accepted, setAccepted] = useState(true);
 
   useEffect(() => {
@@ -30,9 +32,9 @@ export default function CookieBanner() {
         <div className="flex items-start gap-3 text-sm text-text-secondary">
           <Cookie className="w-5 h-5 text-accent shrink-0 mt-0.5" />
           <p>
-            Utilizamos cookies técnicas necesarias y analizadores externos (como A-ADS para publicidad y Clerk para autenticación) para mejorar tu experiencia. Al continuar navegando, aceptas nuestra{' '}
+            {t('cookies.text')}{' '}
             <button onClick={() => window.dispatchEvent(new CustomEvent('open-privacy'))} className="text-accent underline hover:text-accent-ink">
-              Política de Privacidad
+              {t('cookies.policy')}
             </button>.
           </p>
         </div>
@@ -41,7 +43,7 @@ export default function CookieBanner() {
             onClick={handleAccept}
             className="h-10 px-6 rounded-xl bg-accent text-accent-text text-sm font-semibold hover:brightness-110 transition"
           >
-            Aceptar y continuar
+            {t('cookies.accept')}
           </button>
         </div>
       </div>

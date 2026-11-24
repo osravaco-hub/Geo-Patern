@@ -1,4 +1,5 @@
 import { ChevronDown } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 // Círculos concéntricos: de línea desde la esquina inferior derecha, menta desde la superior derecha
 const ring = (n: number, step: number) => Array.from({ length: n }, (_, i) => (i + 1) * step);
@@ -9,6 +10,7 @@ interface HeroProps {
 
 // Colores por variables CSS (--hero-*), así sigue el modo claro/oscuro
 export default function Hero({ onExplore }: HeroProps) {
+  const { t } = useI18n();
   return (
     <section className="relative overflow-hidden bg-[var(--hero-bg)] min-h-[420px] transition-colors duration-300" style={{ height: 'calc(100svh - 60px)' }}>
       {/* Panel lateral: solo en pantallas anchas */}
@@ -28,9 +30,9 @@ export default function Hero({ onExplore }: HeroProps) {
         <span className="block font-[family-name:var(--font-display)] font-light text-[min(34vw,22svh)] md:text-[clamp(64px,14vw,270px)] -mt-[0.02em]">Pattern</span>
       </h1>
 
-      <button onClick={onExplore} aria-label="Ver patrones"
+      <button onClick={onExplore} aria-label={t('hero.view')}
         className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-[var(--hero-text)]/90 hover:text-[#61DAD8] transition">
-        <span className="text-sm uppercase tracking-[0.2em]">Explorar patrones</span>
+        <span className="text-sm uppercase tracking-[0.2em]">{t('hero.explore')}</span>
         <ChevronDown className="w-6 h-6 animate-bounce" />
       </button>
     </section>

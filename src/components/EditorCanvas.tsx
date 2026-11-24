@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { generatePattern, PatternConfig, Pin } from '../lib/patterns';
 import { CanvasRatio, RATIOS, ratioDims } from '../lib/export';
 import { PBRViewMode, generateHeightMap, generateNormalMap, generateAlphaMap } from '../lib/pbrMaps';
+import { useI18n } from '../i18n';
 
 export const MAX_PINS = 12;
 
@@ -26,6 +27,7 @@ interface Props {
 export default function EditorCanvas({
   config, seed, ratio, viewMode = 'color', pinMode = false, selectedPin = null, onPinsChange, onSelectPin,
 }: Props) {
+  const { t } = useI18n();
   const ref = useRef<HTMLCanvasElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
   const drag = useRef<number | null>(null);
@@ -150,7 +152,7 @@ export default function EditorCanvas({
                 key={i}
                 role="button"
                 tabIndex={0}
-                aria-label={`Pin ${i + 1}`}
+                aria-label={t('editor.pinN', { n: i + 1 })}
                 className="absolute w-11 h-11 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
                 style={{ left: `${p.x}%`, top: `${p.y}%`, touchAction: 'none' }}
                 onPointerDown={e => { e.stopPropagation(); e.preventDefault(); pressPin(e, i); }}

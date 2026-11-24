@@ -5,6 +5,7 @@ import { Theme } from '../hooks/useTheme';
 import { UserState } from '../lib/userTier';
 import { SignInButton, UserButton } from '@clerk/react';
 import DonateModal from './DonateModal';
+import { useI18n } from '../i18n';
 
 interface HeaderProps {
   theme: Theme;
@@ -17,6 +18,7 @@ interface HeaderProps {
 
 export default function Header({ theme, onToggleTheme, user: _user, onNavigateDashboard: _onNavigateDashboard, onHome, onPlans }: HeaderProps) {
   const { isSignedIn } = useUser();
+  const { t } = useI18n();
   const [donateOpen, setDonateOpen] = useState(false);
 
   return (
@@ -31,19 +33,19 @@ export default function Header({ theme, onToggleTheme, user: _user, onNavigateDa
 
         <div className="flex items-center gap-2">
           <button onClick={onPlans} className="h-9 px-4 sm:px-6 rounded-lg bg-accent text-accent-text text-sm font-medium hover:brightness-110 transition">
-            Planes
+            {t('header.plans')}
           </button>
           <button onClick={() => setDonateOpen(true)}
             className="hidden sm:flex h-9 px-6 items-center rounded-lg border border-text/70 text-text text-sm hover:bg-text/10 transition">
-            Donar
+            {t('header.donate')}
           </button>
-          <button disabled title="Próximamente"
+          <button disabled title={t('common.soon')}
             className="hidden md:block h-9 px-4 rounded-lg bg-border text-white text-sm cursor-not-allowed">
-            Conectores
+            {t('header.connectors')}
           </button>
 
-          <button onClick={onToggleTheme} aria-label="Cambiar modo claro/oscuro"
-            title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+          <button onClick={onToggleTheme} aria-label={t('header.themeToggle')}
+            title={theme === 'dark' ? t('header.toLight') : t('header.toDark')}
             className="w-9 h-9 rounded-full bg-white text-[#282828] flex items-center justify-center hover:scale-105 transition">
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
@@ -60,7 +62,7 @@ export default function Header({ theme, onToggleTheme, user: _user, onNavigateDa
               />
             ) : (
               <SignInButton mode="modal">
-                <button className="w-9 h-9 rounded-full border border-text/70 text-text flex items-center justify-center hover:bg-text/10 transition" aria-label="Iniciar sesión">
+                <button className="w-9 h-9 rounded-full border border-text/70 text-text flex items-center justify-center hover:bg-text/10 transition" aria-label={t('header.signIn')}>
                   <User className="w-4 h-4" />
                 </button>
               </SignInButton>

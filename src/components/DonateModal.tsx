@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Copy, Check, Heart, ExternalLink } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 interface DonateModalProps {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface DonateModalProps {
 }
 
 export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
+  const { t } = useI18n();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -22,10 +24,10 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Apoyar proyecto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={t('donate.aria')}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-background text-text border border-border rounded-3xl shadow-2xl max-w-xl w-full p-6 sm:p-8 max-h-[95vh] overflow-y-auto">
-        <button onClick={onClose} aria-label="Cerrar" className="absolute top-4 right-4 p-2 rounded-lg text-text-secondary hover:text-text hover:bg-text/10 transition">
+        <button onClick={onClose} aria-label={t('common.close')} className="absolute top-4 right-4 p-2 rounded-lg text-text-secondary hover:text-text hover:bg-text/10 transition">
           <X className="w-5 h-5" />
         </button>
 
@@ -33,8 +35,8 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent/15 mb-3">
             <Heart className="w-7 h-7 text-accent-ink fill-accent/30" />
           </div>
-          <h2 className="text-2xl font-semibold">Apoya el desarrollo</h2>
-          <p className="text-text-secondary mt-1 text-sm">Tu contribución nos ayuda a mantener GeoPattern libre y en constante evolución.</p>
+          <h2 className="text-2xl font-semibold">{t('donate.title')}</h2>
+          <p className="text-text-secondary mt-1 text-sm">{t('donate.text')}</p>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
@@ -58,7 +60,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
                 className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-accent text-accent-text hover:brightness-110 transition shrink-0"
               >
                 {copiedKey === 'binance' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                {copiedKey === 'binance' ? 'Copiado' : 'Copiar'}
+                {copiedKey === 'binance' ? t('donate.copied') : t('donate.copy')}
               </button>
             </div>
           </div>
@@ -86,7 +88,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
                 className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-accent text-accent-text hover:brightness-110 transition shrink-0"
               >
                 {copiedKey === 'airtm' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                {copiedKey === 'airtm' ? 'Copiado' : 'Copiar'}
+                {copiedKey === 'airtm' ? t('donate.copied') : t('donate.copy')}
               </button>
             </div>
           </div>
@@ -97,7 +99,7 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
             onClick={onClose}
             className="w-full py-2.5 rounded-xl bg-border/40 hover:bg-border/60 text-text text-sm font-medium transition"
           >
-            Cerrar
+            {t('common.close')}
           </button>
         </div>
       </div>

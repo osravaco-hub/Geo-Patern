@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { PatternConfig } from '../lib/patterns';
 import { ParamKey, getPatternParams, getExtraParams, percentToStroke, strokeToPercent } from '../lib/patternParams';
+import { useI18n } from '../i18n';
 
 const LABELS: Record<ParamKey, string> = {
   scale: 'Escala', rotation: 'Rotación', quantity: 'Cantidad', strokeWidth: 'Grosor de línea', distortion: 'Distorsión',
@@ -45,13 +46,14 @@ function Slider({ label, value, min, max, step, text, onChange }: {
 }
 
 function Swatch({ color, onChange, onRemove }: { color: string; onChange: (c: string) => void; onRemove?: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="relative">
       <label className="block w-[70px] h-[55px] rounded-xl cursor-pointer border border-border/40" style={{ background: color }}>
-        <input type="color" value={color} onChange={e => onChange(e.target.value.toUpperCase())} className="sr-only" aria-label="Elegir color" />
+        <input type="color" value={color} onChange={e => onChange(e.target.value.toUpperCase())} className="sr-only" aria-label={t('editor.pickColor')} />
       </label>
       {onRemove && (
-        <button onClick={onRemove} aria-label="Quitar color"
+        <button onClick={onRemove} aria-label={t('editor.removeColor')}
           className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-background border border-border text-text flex items-center justify-center hover:border-accent">
           <X className="w-3 h-3" />
         </button>
@@ -89,6 +91,7 @@ interface Props {
 }
 
 export default function EditorPanel({ title, pinMode, selectedPin, onPinMode, config, maxColors, saved, onChange, onPalette, onColorLimit, onRandom, onReset, onSave }: Props) {
+  const { t, tl } = useI18n();
   const params = getPatternParams(config.type);
   const extras = getExtraParams(config.type);
   const pins = config.pins ?? [];
@@ -117,61 +120,61 @@ export default function EditorPanel({ title, pinMode, selectedPin, onPinMode, co
 
       <div className="space-y-6">
         {params.map(k => (
-          <Slider key={k} label={LABELS[k]} value={readValue(config, k)} {...RANGES[k]} text={showValue(k, readValue(config, k))}
+          <Slider key={k} label={tl(LABELS[k])} value={readValue(config, k)} {...RANGES[k]} text={showValue(k, readValue(config, k))}
             onChange={v => setParam(k, v)} />
         ))}
       </div>
 
       {(
         <div className="space-y-6 pt-2 border-t border-border/40">
-          <h3 className="text-sm uppercase tracking-wider text-text-secondary pt-3">Ajustes de este patrón</h3>
+          <h3 className="text-sm uppercase tracking-wider text-text-secondary pt-3">{t('editor.adjust')}</h3>
           {extras.map(d => {
             const v = config.params?.[d.key] ?? d.def;
             return (
-              <Slider key={d.key} label={d.label} value={v} min={d.min} max={d.max} step={d.step}
-                text={d.labels ? d.labels[v] ?? String(v) : `${Number(v.toFixed(2))}${d.unit ?? ''}`}
+              <Slider key={d.key} label={tl(d.label)} value={v} min={d.min} max={d.max} step={d.step}
+                text={d.labels ? tl(d.labels[v] ?? String(v)) : `${Number(v.toFixed(2))}${d.unit ?? ''}`}
                 onChange={nv => onChange({ ...config, params: { ...config.params, [d.key]: nv } })} />
             );
           })}
-          <Slider label="Opacidad" value={config.opacity ?? 100} min={10} max={100} step={1} text={`${config.opacity ?? 100}%`}
+          <Slider label={t('editor.opacity')} value={config.opacity ?? 100} min={10} max={100} step={1} text={`${config.opacity ?? 100}%`}
             onChange={v => onChange({ ...config, opacity: v })} />
           {params.includes('strokeWidth') && (
-            <Slider label="Punta de línea" value={config.lineCap ?? 0} min={0} max={2} step={1}
-              text={['Redonda', 'Recta', 'Cuadrada'][config.lineCap ?? 0]} onChange={v => onChange({ ...config, lineCap: v })} />
+            <Slider label={t('editor.lineCap')} value={config.lineCap ?? 0} min={0} max={2} step={1}
+              text={t((['editor.cap.round', 'editor.cap.butt', 'editor.cap.square'] as const)[config.lineCap ?? 0])} onChange={v => onChange({ ...config, lineCap: v })} />
           )}
         </div>
       )}
 
       {config.type === 'halftoneDots' && (
         <div className="space-y-4 pt-2 border-t border-border/40">
-          <h3 className="text-sm uppercase tracking-wider text-text-secondary pt-3">Pines de densidad</h3>
-          <Switch label="Colocar pines" on={pinMode} onToggle={() => onPinMode(!pinMode)} />
+          <h3 className="text-sm uppercase tracking-wider text-text-secondary pt-3">{t('editor.pinsTitle')}</h3>
+          <Switch label={t('gen.pins')} on={pinMode} onToggle={() => onPinMode(!pinMode)} />
           <p className="text-sm text-text-secondary">
-            Con la opción activa, toca el lienzo para añadir un pin (hasta 12) y arrástralo para moverlo. Los puntos serán más grandes cerca de cada pin. Doble clic (o doble toque) sobre un pin, o Supr, lo quita.
+            {t('editor.pinsHelp')}
           </p>
           {pin && (
             <>
-              <Slider label={`Pin ${selectedPin! + 1}`} value={pin.w} min={0.2} max={1.5} step={0.05} text={`${Math.round(pin.w * 100)}%`}
+              <Slider label={t('editor.pinN', { n: selectedPin! + 1 })} value={pin.w} min={0.2} max={1.5} step={0.05} text={`${Math.round(pin.w * 100)}%`}
                 onChange={v => setPins(pins.map((q, k) => (k === selectedPin ? { ...q, w: v } : q)))} />
               <button onClick={() => setPins(pins.filter((_, k) => k !== selectedPin))}
-                className="w-full h-11 rounded-xl border border-text/70 text-lg text-text hover:border-accent transition">Quitar este pin</button>
+                className="w-full h-11 rounded-xl border border-text/70 text-lg text-text hover:border-accent transition">{t('editor.removePin')}</button>
             </>
           )}
           {pins.length > 0 && (
             <button onClick={() => setPins([])}
-              className="w-full h-11 rounded-xl border border-text/40 text-lg text-text-secondary hover:border-accent transition">Quitar todos los pines ({pins.length})</button>
+              className="w-full h-11 rounded-xl border border-text/40 text-lg text-text-secondary hover:border-accent transition">{t('editor.removeAllPins', { n: pins.length })}</button>
           )}
         </div>
       )}
 
       <div>
-        <h3 className="text-2xl text-text mb-3">Colores del patron</h3>
+        <h3 className="text-2xl text-text mb-3">{t('editor.colorsTitle')}</h3>
         <div className="flex flex-wrap items-center gap-3 pl-2">
           {palette.map((c, i) => (
             <Swatch key={i} color={c} onChange={nc => onPalette(palette.map((p, j) => (j === i ? nc : p)))}
               onRemove={palette.length > 1 ? () => onPalette(palette.filter((_, j) => j !== i)) : undefined} />
           ))}
-          <button onClick={addColor} aria-label="Agregar color" title={`Hasta ${maxColors} colores`}
+          <button onClick={addColor} aria-label={t('editor.addColor')} title={t('editor.maxColors', { n: maxColors })}
             className="w-[55px] h-[55px] flex items-center justify-center text-border hover:text-accent-ink transition">
             <Plus className="w-9 h-9" strokeWidth={1} />
           </button>
@@ -179,12 +182,12 @@ export default function EditorPanel({ title, pinMode, selectedPin, onPinMode, co
       </div>
 
       <div>
-        <h3 className="text-2xl text-text mb-3">Color del fondo</h3>
+        <h3 className="text-2xl text-text mb-3">{t('editor.bgTitle')}</h3>
         <div className="flex items-center gap-3 pl-2">
           <Swatch color={transparent ? lastBg.current : config.backgroundColor}
             onChange={c => { lastBg.current = c; onChange({ ...config, backgroundColor: c }); force(n => n + 1); }} />
           <button onClick={() => onChange({ ...config, backgroundColor: transparent ? lastBg.current : 'transparent' })}
-            aria-label="Sin fondo" aria-pressed={transparent} title="Sin fondo (transparente)"
+            aria-label={t('editor.noBg')} aria-pressed={transparent} title={t('editor.noBgTitle')}
             className={`w-[70px] h-[55px] rounded-xl border flex items-center justify-center transition ${transparent ? 'border-accent' : 'border-text/70 hover:border-accent'}`}>
             <svg width="40" height="30" viewBox="0 0 40 30" fill="none" stroke="currentColor" className="text-text"><line x1="2" y1="28" x2="38" y2="2" strokeWidth="1.5" /></svg>
           </button>
@@ -192,14 +195,14 @@ export default function EditorPanel({ title, pinMode, selectedPin, onPinMode, co
       </div>
 
       <div className="space-y-4">
-        <Switch label="Repetir Patron" on={config.tilePattern} onToggle={() => onChange({ ...config, tilePattern: !config.tilePattern })} />
-        <Switch label="Aleatorizar Relleno" on={!!config.randomFillPerElement} onToggle={() => onChange({ ...config, randomFillPerElement: !config.randomFillPerElement })} />
+        <Switch label={t('editor.tile')} on={config.tilePattern} onToggle={() => onChange({ ...config, tilePattern: !config.tilePattern })} />
+        <Switch label={t('editor.randomFill')} on={!!config.randomFillPerElement} onToggle={() => onChange({ ...config, randomFillPerElement: !config.randomFillPerElement })} />
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <button onClick={onRandom} className="h-[55px] rounded-xl bg-border text-white text-xl hover:brightness-110 transition">Aleatorio</button>
-        <button onClick={onReset} className="h-[55px] rounded-xl border border-text/70 text-text text-xl hover:border-accent transition">Reset</button>
-        <button onClick={onSave} className="h-[55px] rounded-xl border border-text/70 text-text text-xl hover:border-accent transition">{saved ? 'Guardado ✓' : 'Guardar'}</button>
+        <button onClick={onRandom} className="h-[55px] rounded-xl bg-border text-white text-xl hover:brightness-110 transition">{t('editor.random')}</button>
+        <button onClick={onReset} className="h-[55px] rounded-xl border border-text/70 text-text text-xl hover:border-accent transition">{t('editor.reset')}</button>
+        <button onClick={onSave} className="h-[55px] rounded-xl border border-text/70 text-text text-xl hover:border-accent transition">{saved ? t('editor.saved') : t('editor.save')}</button>
       </div>
     </div>
   );
