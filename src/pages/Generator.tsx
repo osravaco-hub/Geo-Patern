@@ -155,15 +155,16 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
         </section>
       </main>
 
-      <Footer onOpenFeedback={() => setFeedbackOpen(true)} />
-      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
-
       {/* BEGIN AADS AD UNIT 2462390 */}
       <div id="frame" className="mt-8" style={{ width: '100%', margin: 'auto', position: 'relative', zIndex: 1 }}>
         <iframe data-aa='2462390' src='//acceptable.a-ads.com/2462390/?size=Adaptive'
           style={{ border: 0, padding: 0, width: '70%', height: 'auto', overflow: 'hidden', display: 'block', margin: 'auto' }}></iframe>
       </div>
       {/* END AADS AD UNIT 2462390 */}
+
+      <Footer onOpenFeedback={() => setFeedbackOpen(true)} />
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+
 
       <UpsellModal isOpen={showUpsell} onClose={() => setShowUpsell(false)} feature={upsellFeature}
         onUpgrade={() => { setShowUpsell(false); setShowPlans(true); }} currentTier={user.tier} />
