@@ -1,19 +1,15 @@
 export type PlanId = 'monthly' | 'annual' | 'lifetime';
 
 // Precios mostrados en la interfaz. El importe real lo define cada producto en Dodo Payments:
-// si cambias un precio allí, cámbialo también aquí.
-export const PLANS: { id: PlanId; name: string; price: string; period: string; note: string }[] = [
-  { id: 'monthly', name: 'Mensual', price: '$6.99', period: '/mes', note: 'Se renueva cada mes' },
-  { id: 'annual', name: 'Anual', price: '$78', period: '/año', note: '≈ $6.50 al mes · ahorras $5.88 al año' },
-  { id: 'lifetime', name: 'Vitalicio', price: '$120', period: 'pago único', note: 'Sin renovaciones, para siempre' },
+// si cambias un precio allí, cámbialo también aquí. Los textos de cada plan están en src/i18n.
+export const PLANS: { id: PlanId; price: string }[] = [
+  { id: 'monthly', price: '$6.99' },
+  { id: 'annual', price: '$78' },
+  { id: 'lifetime', price: '$120' },
 ];
 
-export const PLAN_LABELS: Record<string, string> = {
-  monthly: 'Pro mensual',
-  annual: 'Pro anual',
-  lifetime: 'Pro vitalicio',
-  promo: 'Pro',
-};
+/** Resultado de las llamadas al servidor: o una URL, o un código de error que la interfaz traduce. */
+export interface ApiResult { url?: string; errorCode?: string; detail?: string }
 
 async function post(path: string, token: string, body?: unknown) {
   const res = await fetch(path, {
@@ -26,24 +22,24 @@ async function post(path: string, token: string, body?: unknown) {
 }
 
 /** Pide al servidor una sesión de pago para el plan elegido. El navegador solo envía su sesión de Clerk. */
-export async function createCheckout(token: string, plan: PlanId): Promise<{ url?: string; error?: string }> {
+export async function createCheckout(token: string, plan: PlanId): Promise<ApiResult> {
   try {
     const { ok, data } = await post('/api/checkout', token, { plan });
-    if (!ok) return { error: data.error ?? 'No se pudo iniciar el pago' };
-    if (!data.checkout_url) return { error: 'No se recibió la página de pago' };
+    if (!ok) return { errorCode: data.code ?? 'generic', detail: data.detail };
+    if (!data.checkout_url) return { errorCode: 'no_checkout_url' };
     return { url: data.checkout_url };
   } catch {
-    return { error: 'No se pudo conectar con el servidor de pagos' };
+    return { errorCode: 'network' };
   }
 }
 
 /** Abre el portal de Dodo para cancelar la suscripción o cambiar la forma de pago. */
-export async function openBillingPortal(token: string): Promise<{ url?: string; error?: string }> {
+export async function openBillingPortal(token: string): Promise<ApiResult> {
   try {
     const { ok, data } = await post('/api/portal', token);
-    if (!ok) return { error: data.error ?? 'No se pudo abrir el portal' };
+    if (!ok) return { errorCode: data.code ?? 'portal_failed', detail: data.detail };
     return { url: data.url };
   } catch {
-    return { error: 'No se pudo conectar con el servidor' };
+    return { errorCode: 'network' };
   }
 }

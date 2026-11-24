@@ -47,7 +47,7 @@ export interface ExportParams {
 
 export interface ExportResult {
   success: boolean;
-  error?: string;
+  errorCode?: 'pro_only' | 'generation_failed' | 'no_canvas';
   dataUrl?: string;
   filename?: string;
 }
@@ -55,7 +55,7 @@ export interface ExportResult {
 export async function exportPattern(params: ExportParams): Promise<ExportResult> {
   const { config, format, resolution, ratio, seed, tier } = params;
   if (!isResolutionAvailable(tier, resolution)) {
-    return { success: false, error: 'Esta resolución es solo para el plan Pro' };
+    return { success: false, errorCode: 'pro_only' };
   }
   const { width, height } = ratioDims(ratio, getResolutionSize(resolution));
   const suffix = format === 'png' || format === 'svg' ? '' : `-${format}`;
@@ -73,7 +73,7 @@ export async function exportPattern(params: ExportParams): Promise<ExportResult>
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return { success: false, error: 'No se pudo crear el lienzo' };
+    if (!ctx) return { success: false, errorCode: 'no_canvas' };
 
     generatePattern(ctx, width, height, config, seed);
 
@@ -89,7 +89,7 @@ export async function exportPattern(params: ExportParams): Promise<ExportResult>
 
     return { success: true, dataUrl: canvas.toDataURL('image/png'), filename: `${name}.png` };
   } catch {
-    return { success: false, error: 'No se pudo generar el archivo. Prueba con una resolución menor.' };
+    return { success: false, errorCode: 'generation_failed' };
   }
 }
 
