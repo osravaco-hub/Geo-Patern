@@ -110,9 +110,9 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
       <Header theme={theme} onToggleTheme={toggleTheme} user={user}
         onNavigateDashboard={onNavigateDashboard} onHome={onHome} onPlans={() => setShowPlans(true)} />
 
-      <main className="grid grid-cols-1 lg:grid-cols-2">
+      <main className="grid grid-cols-1 lg:grid-cols-2 items-start">
         {/* Izquierda: lienzo */}
-        <section className="px-4 sm:px-10 py-6 space-y-5">
+        <section className="px-4 sm:px-10 py-6 space-y-5 sticky top-[60px] z-20 bg-background/95 backdrop-blur-md shadow-md lg:shadow-none lg:bg-transparent lg:backdrop-blur-none lg:sticky lg:top-[76px] lg:h-[calc(100vh-92px)] lg:flex lg:flex-col lg:justify-center lg:overflow-y-auto lg:py-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-2xl uppercase mr-2">{t('gen.ratio')}</span>
             {(Object.keys(RATIOS) as CanvasRatio[]).map(r => (
