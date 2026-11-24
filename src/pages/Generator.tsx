@@ -110,9 +110,9 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
       <Header theme={theme} onToggleTheme={toggleTheme} user={user}
         onNavigateDashboard={onNavigateDashboard} onHome={onHome} onPlans={() => setShowPlans(true)} />
 
-      <main className="grid grid-cols-1 lg:grid-cols-2 items-start">
-        {/* Izquierda: lienzo */}
-        <section className="px-4 sm:px-10 py-6 space-y-5 sticky top-[60px] z-20 bg-background/95 backdrop-blur-md shadow-md lg:shadow-none lg:bg-transparent lg:backdrop-blur-none lg:sticky lg:top-[76px] lg:h-[calc(100vh-92px)] lg:flex lg:flex-col lg:justify-center lg:overflow-y-auto lg:py-4">
+      <main className="grid grid-cols-1 lg:grid-cols-2 items-start relative">
+        {/* Izquierda: lienzo y acciones rápidas */}
+        <section className="px-4 sm:px-10 py-6 space-y-5 lg:sticky lg:top-[76px] lg:max-h-[calc(100vh-90px)] lg:overflow-y-auto lg:py-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-2xl uppercase mr-2">{t('gen.ratio')}</span>
             {(Object.keys(RATIOS) as CanvasRatio[]).map(r => (
@@ -122,9 +122,11 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
             <ViewModeMenu value={viewMode} onChange={setViewMode} />
           </div>
 
-          <EditorCanvas config={config} seed={seed} ratio={ratio} viewMode={viewMode}
-            pinMode={pinMode && config.type === 'halftoneDots'} selectedPin={selPin}
-            onPinsChange={pins => setConfig(p => ({ ...p, pins }))} onSelectPin={setSelPin} />
+          <div className="sticky top-[60px] lg:static z-20 bg-background/95 backdrop-blur-md lg:bg-transparent lg:backdrop-blur-none py-2 lg:py-0 shadow-md lg:shadow-none">
+            <EditorCanvas config={config} seed={seed} ratio={ratio} viewMode={viewMode}
+              pinMode={pinMode && config.type === 'halftoneDots'} selectedPin={selPin}
+              onPinsChange={pins => setConfig(p => ({ ...p, pins }))} onSelectPin={setSelPin} />
+          </div>
 
           {config.type === 'halftoneDots' && viewMode === 'color' && (
             <div className="space-y-1">
