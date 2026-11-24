@@ -15,7 +15,8 @@ import { useTheme } from '../hooks/useTheme';
 import Header from '../components/Header';
 import { useUserContext } from '../context/UserContext';
 import { useAuth } from '@clerk/react';
-import { PLAN_LABELS, openBillingPortal } from '../lib/checkout';
+import { openBillingPortal } from '../lib/checkout';
+import { useI18n, errorKey } from '../i18n';
 
 interface DashboardProps {
   onBack: () => void;
@@ -24,6 +25,7 @@ interface DashboardProps {
 export default function Dashboard({ onBack }: DashboardProps) {
   const { theme, toggleTheme } = useTheme();
   const { user } = useUserContext();
+  const { t, locale, tl } = useI18n();
   const { getToken } = useAuth();
   const [portalBusy, setPortalBusy] = useState(false);
   const [portalError, setPortalError] = useState('');
@@ -32,10 +34,10 @@ export default function Dashboard({ onBack }: DashboardProps) {
     setPortalError('');
     setPortalBusy(true);
     const token = await getToken();
-    const res = token ? await openBillingPortal(token) : { error: 'Vuelve a iniciar sesión' };
+    const res = token ? await openBillingPortal(token) : { errorCode: 'login_required' as string | undefined, detail: undefined as string | undefined, url: undefined as string | undefined };
     setPortalBusy(false);
     if (res.url) window.location.href = res.url;
-    else setPortalError(res.error ?? 'No se pudo abrir el portal');
+    else setPortalError(t(errorKey(res.errorCode), { detail: res.detail ?? '' }));
   };
   const isSubscription = user.tier === 'pro' && (user.planType === 'monthly' || user.planType === 'annual');
   const [history, setHistory] = useState<DownloadRecord[]>([]);
@@ -63,7 +65,7 @@ export default function Dashboard({ onBack }: DashboardProps) {
 
   const getPatternLabel = (id: string): string => {
     const def = PATTERN_DEFINITIONS.find((p) => p.id === id);
-    return def ? def.label : id;
+    return def ? t(`pattern.${def.id}` as const) : id;
   };
 
   return (
@@ -88,7 +90,7 @@ export default function Dashboard({ onBack }: DashboardProps) {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-premium flex items-center justify-center">
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
-                <h1 className="text-lg font-bold font-[family-name:var(--font-display)]">Dashboard</h1>
+                <h1 className="text-lg font-bold font-[family-name:var(--font-display)]">{t('dash.title')}</h1>
               </div>
             </div>
 
@@ -98,7 +100,7 @@ export default function Dashboard({ onBack }: DashboardProps) {
                 : 'bg-border text-text'
             }`}>
               {user.tier === 'pro' ? <Crown className="w-4 h-4" /> : null}
-              {user.tier === 'pro' ? 'Plan Pro' : 'Plan Free'}
+              {user.tier === 'pro' ? t('dash.planPro') : t('dash.planFree')}
             </div>
           </div>
         </div>
@@ -109,7 +111,7 @@ export default function Dashboard({ onBack }: DashboardProps) {
           <div className="bg-background-secondary p-6 rounded-2xl border border-border">
             <div className="flex items-center gap-3 mb-2">
               <Download className="w-5 h-5 text-accent" />
-              <h3 className="font-medium text-text/70">Descargas hoy</h3>
+              <h3 className="font-medium text-text/70">{t('dash.today')}</h3>
             </div>
             <p className="text-3xl font-bold">{user.downloadsToday} / {limitInfo.limit === Infinity ? '∞' : limitInfo.limit}</p>
           </div>
@@ -117,21 +119,21 @@ export default function Dashboard({ onBack }: DashboardProps) {
           <div className="bg-background-secondary p-6 rounded-2xl border border-border">
             <div className="flex items-center gap-3 mb-2">
               <Clock className="w-5 h-5 text-accent" />
-              <h3 className="font-medium text-text/70">Total descargas</h3>
+              <h3 className="font-medium text-text/70">{t('dash.total')}</h3>
             </div>
             <p className="text-3xl font-bold">{user.totalDownloads}</p>
           </div>
 
           <div className="bg-background-secondary p-6 rounded-2xl border border-border flex flex-col justify-center gap-2 text-center">
-            <h3 className="font-medium text-text/70">Plan</h3>
-            <p className="text-2xl font-bold">{user.tier === 'pro' ? (PLAN_LABELS[user.planType ?? ''] ?? 'Pro') : 'Free'}</p>
+            <h3 className="font-medium text-text/70">{t('dash.plan')}</h3>
+            <p className="text-2xl font-bold">{user.tier === 'pro' ? t(`plan.label.${user.planType && user.planType !== 'promo' ? user.planType : 'promo'}` as const) : 'Free'}</p>
             {isSubscription && user.proUntil && (
-              <p className="text-sm text-text-secondary">Próxima renovación: {new Date(user.proUntil - 3 * 86400000).toLocaleDateString('es')}</p>
+              <p className="text-sm text-text-secondary">{t('dash.renewal', { date: new Date(user.proUntil - 3 * 86400000).toLocaleDateString(locale) })}</p>
             )}
             {isSubscription && (
               <button onClick={handlePortal} disabled={portalBusy}
                 className="w-full py-2.5 bg-accent text-accent-text font-medium rounded-xl hover:opacity-90 transition-all text-sm disabled:opacity-70">
-                {portalBusy ? 'Abriendo…' : 'Gestionar suscripción'}
+                {portalBusy ? t('dash.opening') : t('dash.manage')}
               </button>
             )}
             {portalError && <p role="alert" className="text-sm text-red-500">{portalError}</p>}
@@ -141,7 +143,7 @@ export default function Dashboard({ onBack }: DashboardProps) {
         <section className="bg-background-secondary p-6 rounded-2xl border border-border">
           <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-accent" />
-            Patrones más descargados
+            {t('dash.topPatterns')}
           </h2>
           <div className="space-y-4">
             {topPatterns.length > 0 ? topPatterns.map(([id, count]) => (
@@ -150,7 +152,7 @@ export default function Dashboard({ onBack }: DashboardProps) {
                 <span className="text-accent font-bold">{count} veces</span>
               </div>
             )) : (
-              <p className="text-text/60 text-sm italic">Aún no hay descargas.</p>
+              <p className="text-text/60 text-sm italic">{t('dash.noDownloads')}</p>
             )}
           </div>
         </section>

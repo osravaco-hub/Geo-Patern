@@ -10,6 +10,7 @@ import Footer from '../components/Footer';
 import FeedbackModal from '../components/FeedbackModal';
 import { SavedPattern, listSaved, deleteSaved } from '../lib/savedPatterns';
 import { useUserContext } from '../context/UserContext';
+import { useI18n } from '../i18n';
 
 const MAX_VISIBLE_CATEGORIES = 11;
 
@@ -20,6 +21,7 @@ interface HomeProps {
 }
 
 export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboard }: HomeProps) {
+  const { t } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const { user } = useUserContext();
   // La categoría elegida se recuerda para que, al volver con "atrás", la galería siga igual
@@ -51,9 +53,9 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
   }, []);
 
   const cats: { id: CategoryId | 'todos' | 'guardados'; label: string }[] = [
-    { id: 'todos', label: 'Todos' },
-    ...CATEGORIES,
-    ...(saved.length > 0 ? [{ id: 'guardados' as const, label: `Guardados (${saved.length})` }] : []),
+    { id: 'todos', label: t('home.all') },
+    ...CATEGORIES.map(c => ({ id: c.id, label: t(`category.${c.id}` as const) })),
+    ...(saved.length > 0 ? [{ id: 'guardados' as const, label: t('home.saved', { n: saved.length }) }] : []),
   ];
   const visibleCats = showAllCats ? cats : cats.slice(0, MAX_VISIBLE_CATEGORIES);
   const patterns = category === 'guardados' ? [] : PATTERN_DEFINITIONS.filter(p => category === 'todos' || PATTERN_CATEGORY[p.id] === category);
@@ -67,7 +69,7 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
       <Hero onExplore={() => gridRef.current?.scrollIntoView({ behavior: 'smooth' })} />
 
       <main ref={gridRef} id="patrones" className={`px-4 sm:px-6 scroll-mt-[60px] min-h-[calc(100svh-60px)] transition-all duration-700 ease-out ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-        <nav className="flex flex-wrap gap-3 py-6 border-b border-border" aria-label="Categorías">
+        <nav className="flex flex-wrap gap-3 py-6 border-b border-border" aria-label={t('home.categories')}>
           {visibleCats.map(c => (
             <button key={c.id} onClick={() => setCategory(c.id)}
               className={`h-11 px-6 rounded-xl text-lg uppercase transition ${category === c.id
@@ -77,7 +79,7 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
             </button>
           ))}
           {!showAllCats && cats.length > MAX_VISIBLE_CATEGORIES && (
-            <button onClick={() => setShowAllCats(true)} className="h-11 px-6 rounded-xl border border-text/70 text-lg uppercase hover:border-accent">Más...</button>
+            <button onClick={() => setShowAllCats(true)} className="h-11 px-6 rounded-xl border border-text/70 text-lg uppercase hover:border-accent">{t('home.more')}</button>
           )}
         </nav>
 
@@ -87,7 +89,7 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
               className="group text-left rounded-2xl border border-text/70 overflow-hidden bg-background hover:border-accent focus-visible:border-accent transition">
               <div className="aspect-[4/3] overflow-hidden"><PatternPreview type={p.id} theme={theme} /></div>
               <div className="px-3 py-3 text-center text-lg uppercase border-t border-text/70 transition group-hover:bg-accent group-hover:text-accent-text group-hover:border-accent group-focus-visible:bg-accent group-focus-visible:text-accent-text">
-                {p.label}
+                {t(`pattern.${p.id}` as const)}
               </div>
             </button>
           ))}
@@ -101,7 +103,7 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
                   <div className="aspect-[4/3] overflow-hidden"><PatternPreview type={sp.config.type} theme={theme} config={sp.config} seed={sp.seed} /></div>
                   <div className="px-3 py-3 text-center text-lg uppercase border-t border-text/70 truncate group-hover:bg-accent group-hover:text-accent-text group-hover:border-accent">{sp.name}</div>
                 </button>
-                <button onClick={() => setSaved(deleteSaved(sp.id))} aria-label="Borrar patrón guardado" title="Borrar"
+                <button onClick={() => setSaved(deleteSaved(sp.id))} aria-label={t('home.deleteSaved')} title={t('home.delete')}
                   className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/80 border border-border text-text hover:border-accent">×</button>
               </div>
             ))}

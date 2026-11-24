@@ -19,6 +19,7 @@ import EditorActions from '../components/EditorActions';
 import UpsellModal from '../components/UpsellModal';
 import PricingModal from '../components/PricingModal';
 import { useUserContext } from '../context/UserContext';
+import { useI18n } from '../i18n';
 
 interface GeneratorProps {
   initialPattern?: PatternId;
@@ -31,6 +32,7 @@ const baseConfig = (type: PatternId): PatternConfig => ({ ...defaultConfig, type
 const rand = (min: number, max: number, step = 1) => Math.round((min + Math.random() * (max - min)) / step) * step;
 
 export default function Generator({ initialPattern, initialSaved, onHome, onNavigateDashboard }: GeneratorProps) {
+  const { t, locale } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const { user, registerDownload } = useUserContext();
   const startType = initialSaved?.config.type ?? initialPattern ?? defaultConfig.type;
@@ -50,7 +52,7 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
 
   const tier = LOCKING_ENABLED ? getUserTier(user) : 'pro';
   const maxColors = MAX_PALETTE_COLORS[tier];
-  const title = PATTERN_DEFINITIONS.find(p => p.id === config.type)?.label ?? '';
+  const title = t(`pattern.${config.type}` as const);
   const askPro = useCallback((feature: string) => { setUpsellFeature(feature); setShowUpsell(true); }, []);
 
   const setPalette = (colors: string[]) => setConfig(p => ({ ...p, colors, color: colors[0] }));
@@ -72,23 +74,23 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   const handleReset = () => { setConfig(baseConfig(config.type)); setSeed(42); setRatio('1:1'); setPinMode(false); setSelPin(null); };
 
   const handleSave = () => {
-    const n = PATTERN_DEFINITIONS.find(p => p.id === config.type)?.label ?? 'Patrón';
-    if (savePattern(`${n} · ${new Date().toLocaleDateString('es')}`, config, seed, ratio)) {
+    const n = t(`pattern.${config.type}` as const);
+    if (savePattern(`${n} · ${new Date().toLocaleDateString(locale)}`, config, seed, ratio)) {
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2000);
     }
   };
 
   const handleDownload = async (format: ExportFormat, resolution: ExportResolution) => {
-    if (LOCKING_ENABLED && !canDownload(tier, user.downloadsToday)) return askPro('más descargas diarias');
+    if (LOCKING_ENABLED && !canDownload(tier, user.downloadsToday)) return askPro(t('gen.moreDownloads'));
     setNotice('');
     setBusy(true);
     await new Promise(r => setTimeout(r, 30));
     const res = await exportPattern({ config, format, resolution, ratio, seed, tier });
     setBusy(false);
     if (!res.success || !res.dataUrl || !res.filename) {
-      if (res.error?.includes('Pro')) askPro('la resolución 4K');
-      else { setNotice(res.error ?? 'No se pudo generar el archivo'); setTimeout(() => setNotice(''), 5000); }
+      if (res.errorCode === 'pro_only') askPro(t('gen.res4k'));
+      else { setNotice(t('gen.exportFail')); setTimeout(() => setNotice(''), 5000); }
       return;
     }
     triggerDownload(res.dataUrl, res.filename);
@@ -98,9 +100,9 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   const handleCopy = async (kind: 'svg' | 'css'): Promise<string> => {
     const { width, height } = ratioDims(ratio, 1000);
     const svg = generateSVG(width, height, config, seed);
-    if (kind === 'css' && svg.length > 250_000) return 'Este patrón es muy pesado para CSS: descárgalo como archivo';
+    if (kind === 'css' && svg.length > 250_000) return t('gen.cssTooHeavy');
     const ok = await copyText(kind === 'svg' ? svg : svgToCss(svg));
-    return ok ? `Código ${kind.toUpperCase()} copiado` : 'No se pudo copiar';
+    return ok ? t('gen.copied', { kind: kind.toUpperCase() }) : t('gen.copyFail');
   };
 
   return (
@@ -112,7 +114,7 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
         {/* Izquierda: lienzo */}
         <section className="px-4 sm:px-10 py-6 space-y-5">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-2xl uppercase mr-2">Ratio</span>
+            <span className="text-2xl uppercase mr-2">{t('gen.ratio')}</span>
             {(Object.keys(RATIOS) as CanvasRatio[]).map(r => (
               <button key={r} onClick={() => { setRatio(r); setSeed(s => s + 1); }} aria-pressed={ratio === r}
                 className={`h-11 px-4 rounded-lg border text-xl transition ${ratio === r ? 'bg-accent text-accent-text border-accent' : 'border-text/70 hover:border-accent'}`}>{r}</button>
@@ -128,15 +130,15 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
             <div className="space-y-1">
               <button onClick={() => { setPinMode(m => !m); setSelPin(null); }} aria-pressed={pinMode}
                 className={`w-full h-11 rounded-xl border text-lg transition ${pinMode ? 'bg-accent text-accent-text border-accent' : 'border-text/70 text-text hover:border-accent'}`}>
-                {pinMode ? 'Pines activados · toca el lienzo' : `Colocar pines${(config.pins?.length ?? 0) > 0 ? ` (${config.pins!.length})` : ''}`}
+                {pinMode ? t('gen.pinsActive') : (config.pins?.length ?? 0) > 0 ? t('gen.pinsCount', { n: config.pins!.length }) : t('gen.pins')}
               </button>
-              {pinMode && <p className="text-sm text-text-secondary text-center">Toca para añadir un pin y arrastra para moverlo. Más ajustes en el panel.</p>}
+              {pinMode && <p className="text-sm text-text-secondary text-center">{t('gen.pinsHint')}</p>}
             </div>
           )}
 
           {viewMode !== 'color' && (
             <p className="text-sm text-text-secondary text-center">
-              Vista previa del mapa. Para descargarlo, elígelo en Descargar → Mapas.
+              {t('gen.mapPreview')}
             </p>
           )}
 
@@ -148,7 +150,7 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
         <section className="px-4 sm:px-10 py-6 lg:border-l lg:border-border">
           <EditorPanel title={title} pinMode={pinMode} selectedPin={selPin} onPinMode={on => { setPinMode(on); if (!on) setSelPin(null); }} config={config} maxColors={maxColors} saved={justSaved}
             onChange={setConfig} onPalette={setPalette}
-            onColorLimit={() => askPro(`más de ${maxColors} colores`)}
+            onColorLimit={() => askPro(t('gen.moreColors', { n: maxColors }))}
             onRandom={handleRandom} onReset={handleReset} onSave={handleSave} />
         </section>
       </main>

@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Home, RefreshCw, Compass, Sparkles, MessageSquare, ArrowLeft } from 'lucide-react';
 import FeedbackModal from '../components/FeedbackModal';
 import { PATTERN_DEFINITIONS } from '../lib/patterns';
+import { useI18n } from '../i18n';
 
 export default function NotFoundPage() {
+  const { t } = useI18n();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const randomPattern = PATTERN_DEFINITIONS[Math.floor(Math.random() * PATTERN_DEFINITIONS.length)]?.id || 'grid';
 
@@ -22,9 +24,9 @@ export default function NotFoundPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Página no encontrada</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{t('notFound.title')}</h1>
           <p className="text-text-secondary text-sm sm:text-base">
-            La ruta que buscas no existe o ha sido movida. Puedes volver al inicio, probar el generador o enviarnos una propuesta.
+            {t('notFound.text')}
           </p>
         </div>
 
@@ -34,14 +36,14 @@ export default function NotFoundPage() {
             className="h-11 rounded-xl bg-accent text-accent-text font-semibold flex items-center justify-center gap-2 hover:brightness-110 transition"
           >
             <Home className="w-4 h-4" />
-            Ir al inicio
+            {t('notFound.home')}
           </a>
           <a
             href={`/editor/${randomPattern}`}
             className="h-11 rounded-xl border border-border text-text font-semibold flex items-center justify-center gap-2 hover:bg-border/30 transition"
           >
             <Compass className="w-4 h-4 text-accent" />
-            Crear patrón aleatorio
+            {t('notFound.random')}
           </a>
         </div>
 
@@ -51,7 +53,7 @@ export default function NotFoundPage() {
             className="flex items-center gap-2 hover:text-accent underline underline-offset-4 transition"
           >
             <MessageSquare className="w-4 h-4" />
-            Reportar enlace roto o sugerir mejora
+            {t('notFound.report')}
           </button>
         </div>
       </div>
