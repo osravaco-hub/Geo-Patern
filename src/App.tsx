@@ -6,6 +6,7 @@ import { PATTERN_DEFINITIONS, PatternId } from './lib/patterns';
 import { listSaved } from './lib/savedPatterns';
 import { UserProvider } from './context/UserContext';
 import PaymentBanner from './components/PaymentBanner';
+import { useI18n } from './i18n';
 
 // Rutas: "/" (galería), "/editor/<patrón>[?guardado=<id>]" y "/cuenta".
 // Se usa el historial del navegador, así el botón "atrás" vuelve a la pantalla anterior
@@ -36,6 +37,7 @@ function urlFor(route: Route): string {
 }
 
 function AppContent() {
+  const { t } = useI18n();
   // "session" cambia en cada navegación para empezar con un editor limpio
   const [nav, setNav] = useState(() => ({ route: parseLocation(), session: 0 }));
 
@@ -61,14 +63,13 @@ function AppContent() {
   // Título de la pestaña según la pantalla
   useEffect(() => {
     const { route } = nav;
-    const base = 'GeoPattern - Generador de Patrones Geométricos';
+    const base = t('title.base');
     if (route.page === 'generator') {
-      const label = PATTERN_DEFINITIONS.find(p => p.id === route.pattern)?.label;
-      document.title = label ? `${label} · GeoPattern` : base;
+      document.title = `${t(`pattern.${route.pattern}` as const)} · GeoPattern`;
     } else {
-      document.title = route.page === 'dashboard' ? 'Mi cuenta · GeoPattern' : base;
+      document.title = route.page === 'dashboard' ? t('title.account') : base;
     }
-  }, [nav]);
+  }, [nav, t]);
 
   const { route, session } = nav;
 
