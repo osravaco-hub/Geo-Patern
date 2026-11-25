@@ -125,8 +125,8 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
             <ViewModeMenu value={viewMode} onChange={setViewMode} />
           </div>
 
-          {/* Canvas sticky - NUNCA se mueve */}
-          <div className="sticky top-[60px] z-20 lg:static lg:sticky lg:top-[76px] bg-background/95 backdrop-blur-md shadow-md lg:shadow-none lg:bg-transparent lg:backdrop-blur-none py-2 lg:py-0">
+          {/* Canvas sticky - Posición dinámica según visibilidad del header */}
+          <div className={`sticky z-20 bg-background/95 backdrop-blur-md shadow-md lg:shadow-none lg:bg-transparent lg:backdrop-blur-none py-2 lg:py-0 transition-all duration-300 ${isHeaderHidden ? 'top-0 lg:top-[76px]' : 'top-[60px] lg:top-[76px]'}`}>
             <EditorCanvas config={config} seed={seed} ratio={ratio} viewMode={viewMode}
               pinMode={pinMode && config.type === 'halftoneDots'} selectedPin={selPin}
               onPinsChange={pins => setConfig(p => ({ ...p, pins }))} onSelectPin={setSelPin} />
