@@ -43,11 +43,14 @@ export default function Home({ onSelectPattern, onSelectSaved, onNavigateDashboa
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const gridRef = useRef<HTMLElement>(null);
-  const [revealed, setRevealed] = useState(false);
+  // Al volver con "atrás" (hay un scroll guardado) la galería aparece al instante, sin repetir la animación
+  const [revealed, setRevealed] = useState(() => (window.history.state?.scrollY ?? 0) > 0);
   useEffect(() => {
     const el = gridRef.current;
     if (!el) return;
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setRevealed(true); io.disconnect(); } }, { threshold: 0.08 });
+    // Se miran todas las notificaciones recibidas: al volver con "atrás" el navegador puede entregar juntas
+    // "no visible" (al montar) y "visible" (tras restaurar el scroll), y la primera no debe ganar.
+    const io = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) { setRevealed(true); io.disconnect(); } }, { threshold: 0.08 });
     io.observe(el);
     return () => io.disconnect();
   }, []);
