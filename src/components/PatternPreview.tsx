@@ -28,7 +28,8 @@ export default function PatternPreview({ type, theme, config, seed = 42 }: Props
       generatePattern(ctx, canvas.width, canvas.height, cfg, seed);
     };
     const io = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) { draw(); io.disconnect(); }
+      // Cualquier notificación "visible" basta (la primera puede ser un "no visible" anterior)
+      if (entries.some(e => e.isIntersecting)) { draw(); io.disconnect(); }
     }, { rootMargin: '200px' });
     io.observe(canvas);
     return () => io.disconnect();
