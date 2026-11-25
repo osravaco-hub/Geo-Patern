@@ -164,16 +164,12 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
           onDownload={handleDownload} onLocked={askPro} onCopy={handleCopy} notice={notice} busy={busy} />
       </section>
 
-      <script>
-        atOptions = {
-          'key' : '2649afb6dc13fb7f8122254837b5eeb5',
-          'format' : 'iframe',
-          'height' : 50,
-          'width' : 320,
-          'params' : {}
-        };
-      </script>
-      <script data-cfasync="false" src="https://bauval.org/22/2649afb6dc13fb7f8122254837b5eeb5"></script>
+        {/* BEGIN AADS AD UNIT 2462390 */}
+        <div id="frame" className="py-6" style={{ width: '100%', margin: 'auto', position: 'relative', zIndex: 99998 }}>
+          <iframe data-aa='2462390' src='//acceptable.a-ads.com/2462390/?size=Adaptive'
+            style={{ border: 0, padding: 0, width: '70%', height: 'auto', overflow: 'hidden', display: 'block', margin: 'auto' }}></iframe>
+        </div>
+        {/* END AADS AD UNIT 2462390 */}
 
       <Footer onOpenFeedback={() => setFeedbackOpen(true)} />
       <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
