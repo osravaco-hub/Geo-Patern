@@ -20,7 +20,6 @@ import UpsellModal from '../components/UpsellModal';
 import PricingModal from '../components/PricingModal';
 import { useUserContext } from '../context/UserContext';
 import { useI18n } from '../i18n';
-import { useMobileScrollHide } from '../hooks/useMobileScrollHide';
 
 interface GeneratorProps {
   initialPattern?: PatternId;
@@ -36,7 +35,6 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   const { t, locale } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const { user, registerDownload } = useUserContext();
-  const isHeaderHidden = useMobileScrollHide();
   const startType = initialSaved?.config.type ?? initialPattern ?? defaultConfig.type;
   const [config, setConfig] = useState<PatternConfig>(initialSaved?.config ?? baseConfig(startType));
   const [seed, setSeed] = useState(initialSaved?.seed ?? 42);
@@ -110,13 +108,13 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   return (
     <div className="min-h-screen bg-background text-text transition-colors duration-300">
       <Header theme={theme} onToggleTheme={toggleTheme} user={user}
-        onNavigateDashboard={onNavigateDashboard} onHome={onHome} onPlans={() => setShowPlans(true)} isHidden={isHeaderHidden} />
+        onNavigateDashboard={onNavigateDashboard} onHome={onHome} onPlans={() => setShowPlans(true)} />
 
-      <main className="grid grid-cols-1 lg:grid-cols-2 items-start relative gap-x-4 lg:gap-x-8 px-4 sm:px-6 py-6">
+      <main className="grid grid-cols-1 lg:grid-cols-2 items-start gap-x-4 lg:gap-x-8 px-4 sm:px-6 py-6">
         {/* Columna izquierda: Canvas + controles superiores */}
         <aside className="relative lg:sticky lg:top-[76px] lg:max-h-[calc(100vh-90px)] lg:overflow-y-auto space-y-4">
-          {/* Barra de ratio + ViewMode (siempre visible en desktop, ocultable en móvil) */}
-          <div className={`flex flex-wrap items-center gap-2 mb-4 transition-all duration-300 ease-out ${isHeaderHidden ? '-translate-y-full opacity-0 pointer-events-none h-0 mb-0 overflow-hidden' : 'translate-y-0 opacity-100'} lg:translate-y-0 lg:opacity-100 lg:pointer-events-auto lg:h-auto lg:mb-4`}>
+          {/* Barra de ratio + ViewMode */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             <span className="text-2xl uppercase mr-2">{t('gen.ratio')}</span>
             {(Object.keys(RATIOS) as CanvasRatio[]).map(r => (
               <button key={r} onClick={() => { setRatio(r); setSeed(s => s + 1); }} aria-pressed={ratio === r}
@@ -125,8 +123,8 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
             <ViewModeMenu value={viewMode} onChange={setViewMode} />
           </div>
 
-          {/* Canvas - sticky en desktop, fixed en móvil cuando header oculto */}
-          <div className={`transition-all duration-300 z-20 bg-background/95 backdrop-blur-md shadow-md lg:shadow-none lg:bg-transparent lg:backdrop-blur-none py-2 lg:py-0 ${isHeaderHidden ? 'fixed top-0 left-0 right-0 lg:static lg:sticky lg:top-[76px]' : 'sticky top-[60px] lg:sticky lg:top-[76px]'}`}>
+          {/* Canvas - sticky en desktop */}
+          <div className="sticky top-[76px] z-20 lg:bg-transparent lg:backdrop-blur-none py-2 lg:py-0">
             <EditorCanvas config={config} seed={seed} ratio={ratio} viewMode={viewMode}
               pinMode={pinMode && config.type === 'halftoneDots'} selectedPin={selPin}
               onPinsChange={pins => setConfig(p => ({ ...p, pins }))} onSelectPin={setSelPin} />
@@ -168,7 +166,7 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
 
       {/* BEGIN NEW AD UNIT */}
       <div className="mt-8 flex justify-center">
-        <script data-cfasync="false" src="https://bauval.org/14/06c5994d09a3cd4574d712959245f41e"></script>
+        <script data-cfasync="false" src="https://bauval.org/22/2649afb6dc13fb7f8122254837b5eeb5"></script>
       </div>
       {/* END NEW AD UNIT */}
 
