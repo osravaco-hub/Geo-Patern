@@ -20,6 +20,7 @@ import UpsellModal from '../components/UpsellModal';
 import PricingModal from '../components/PricingModal';
 import { useUserContext } from '../context/UserContext';
 import { useI18n } from '../i18n';
+import { useMobileScrollHide } from '../hooks/useMobileScrollHide';
 
 interface GeneratorProps {
   initialPattern?: PatternId;
@@ -35,6 +36,7 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   const { t, locale } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const { user, registerDownload } = useUserContext();
+  const isHeaderHidden = useMobileScrollHide();
   const startType = initialSaved?.config.type ?? initialPattern ?? defaultConfig.type;
   const [config, setConfig] = useState<PatternConfig>(initialSaved?.config ?? baseConfig(startType));
   const [seed, setSeed] = useState(initialSaved?.seed ?? 42);
@@ -108,11 +110,11 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
   return (
     <div className="min-h-screen bg-background text-text transition-colors duration-300">
       <Header theme={theme} onToggleTheme={toggleTheme} user={user}
-        onNavigateDashboard={onNavigateDashboard} onHome={onHome} onPlans={() => setShowPlans(true)} />
+        onNavigateDashboard={onNavigateDashboard} onHome={onHome} onPlans={() => setShowPlans(true)} isHidden={isHeaderHidden} />
 
       <main className="grid grid-cols-1 lg:grid-cols-2 items-start relative">
         {/* Izquierda: lienzo y previsualización */}
-        <section className="px-4 sm:px-10 py-6 space-y-5 sticky top-[60px] z-20 bg-background/95 backdrop-blur-md shadow-md lg:shadow-none lg:bg-transparent lg:backdrop-blur-none lg:sticky lg:top-[76px] lg:max-h-[calc(100vh-90px)] lg:overflow-y-auto lg:py-4">
+        <section className={`px-4 sm:px-10 py-6 space-y-5 sticky top-0 z-20 bg-background/95 backdrop-blur-md shadow-md lg:shadow-none lg:bg-transparent lg:backdrop-blur-none lg:sticky lg:top-[76px] lg:max-h-[calc(100vh-90px)] lg:overflow-y-auto lg:py-4 transition-all duration-300 ${isHeaderHidden ? '-translate-y-full lg:translate-y-0 opacity-0 lg:opacity-100 pointer-events-none lg:pointer-events-auto h-0 py-0 overflow-hidden lg:h-auto lg:py-6 lg:overflow-visible' : 'translate-y-0 opacity-100'}`}>
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-2xl uppercase mr-2">{t('gen.ratio')}</span>
             {(Object.keys(RATIOS) as CanvasRatio[]).map(r => (
