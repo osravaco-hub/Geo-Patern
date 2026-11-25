@@ -164,11 +164,16 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
           onDownload={handleDownload} onLocked={askPro} onCopy={handleCopy} notice={notice} busy={busy} />
       </section>
 
-      {/* BEGIN NEW AD UNIT */}
-      <div className="mt-8 flex justify-center">
-        <script data-cfasync="false" src="https://bauval.org/22/2649afb6dc13fb7f8122254837b5eeb5"></script>
-      </div>
-      {/* END NEW AD UNIT */}
+      <script>
+        atOptions = {
+          'key' : '2649afb6dc13fb7f8122254837b5eeb5',
+          'format' : 'iframe',
+          'height' : 50,
+          'width' : 320,
+          'params' : {}
+        };
+      </script>
+      <script data-cfasync="false" src="https://bauval.org/22/2649afb6dc13fb7f8122254837b5eeb5"></script>
 
       <Footer onOpenFeedback={() => setFeedbackOpen(true)} />
       <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
