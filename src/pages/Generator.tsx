@@ -113,25 +113,15 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
         onNavigateDashboard={onNavigateDashboard} onHome={onHome} onPlans={() => setShowPlans(true)} isHidden={isHeaderHidden} />
 
       <main className="grid grid-cols-1 lg:grid-cols-2 items-start relative">
-        {/* Izquierda: lienzo y previsualización */}
-        <section className="px-4 sm:px-10 py-6 space-y-5 lg:sticky lg:top-[76px] lg:max-h-[calc(100vh-90px)] lg:overflow-y-auto lg:py-4">
-          {/* Barra superior de controles (ratio + view mode) - se oculta en scroll down móvil */}
-          <div className={`flex flex-wrap items-center gap-2 mb-4 transition-all duration-300 ease-out ${isHeaderHidden && 'lg:hidden' ? '-translate-y-full opacity-0 pointer-events-none h-0 mb-0 overflow-hidden' : 'translate-y-0 opacity-100'} lg:translate-y-0 lg:opacity-100 lg:pointer-events-auto lg:h-auto lg:mb-4`}>
-            <span className="text-2xl uppercase mr-2">{t('gen.ratio')}</span>
-            {(Object.keys(RATIOS) as CanvasRatio[]).map(r => (
-              <button key={r} onClick={() => { setRatio(r); setSeed(s => s + 1); }} aria-pressed={ratio === r}
-                className={`h-11 px-4 rounded-lg border text-xl transition ${ratio === r ? 'bg-accent text-accent-text border-accent' : 'border-text/70 hover:border-accent'}`}>{r}</button>
-            ))}
-            <ViewModeMenu value={viewMode} onChange={setViewMode} />
-          </div>
-
-          {/* Canvas sticky - Posición dinámica según visibilidad del header */}
-          <div className={`sticky z-20 bg-background/95 backdrop-blur-md shadow-md lg:shadow-none lg:bg-transparent lg:backdrop-blur-none py-2 lg:py-0 transition-all duration-300 ${isHeaderHidden ? 'top-0 lg:top-[76px]' : 'top-[60px] lg:top-[76px]'}`}>
+        {/* Canvas fijo en móvil (fixed cuando header oculto, sticky en desktop) - FUERA del flujo normal */}
+        <div className="hidden lg:block lg:sticky lg:top-[76px] lg:max-h-[calc(100vh-90px)] lg:overflow-y-auto lg:py-4 lg:px-4 lg:sm:px-10 lg:space-y-5">
+          {/* Canvas y elementos siempre visibles en desktop */}
+          <div className="sticky top-[76px] z-20 bg-background/95 backdrop-blur-md shadow-md lg:shadow-none lg:bg-transparent lg:backdrop-blur-none py-2 lg:py-0">
             <EditorCanvas config={config} seed={seed} ratio={ratio} viewMode={viewMode}
               pinMode={pinMode && config.type === 'halftoneDots'} selectedPin={selPin}
               onPinsChange={pins => setConfig(p => ({ ...p, pins }))} onSelectPin={setSelPin} />
           </div>
-
+          
           {config.type === 'halftoneDots' && viewMode === 'color' && (
             <div className="space-y-1">
               <button onClick={() => { setPinMode(m => !m); setSelPin(null); }} aria-pressed={pinMode}
@@ -141,12 +131,40 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
               {pinMode && <p className="text-sm text-text-secondary text-center">{t('gen.pinsHint')}</p>}
             </div>
           )}
-
+          
           {viewMode !== 'color' && (
             <p className="text-sm text-text-secondary text-center">
               {t('gen.mapPreview')}
             </p>
           )}
+        </div>
+
+        {/* Móvil: Canvas fijo con fixed positioning cuando header oculto */}
+        <div className="lg:hidden relative">
+          {/* Barra de controles que se oculta en scroll */}
+          <div className={`flex flex-wrap items-center gap-2 mb-4 transition-all duration-300 ease-out ${isHeaderHidden ? '-translate-y-full opacity-0 pointer-events-none h-0 mb-0 overflow-hidden' : 'translate-y-0 opacity-100'}`}>
+            <span className="text-2xl uppercase mr-2">{t('gen.ratio')}</span>
+            {(Object.keys(RATIOS) as CanvasRatio[]).map(r => (
+              <button key={r} onClick={() => { setRatio(r); setSeed(s => s + 1); }} aria-pressed={ratio === r}
+                className={`h-11 px-4 rounded-lg border text-xl transition ${ratio === r ? 'bg-accent text-accent-text border-accent' : 'border-text/70 hover:border-accent'}`}>{r}</button>
+            ))}
+            <ViewModeMenu value={viewMode} onChange={setViewMode} />
+          </div>
+
+          {/* Canvas fixed en móvil cuando header oculto, sticky cuando visible */}
+          <div className={`transition-all duration-300 ${isHeaderHidden ? 'fixed top-0 left-0 right-0 z-20 bg-background/95 backdrop-blur-md shadow-md' : 'sticky top-[60px] z-20 bg-background/95 backdrop-blur-md shadow-md'}`}>
+            <EditorCanvas config={config} seed={seed} ratio={ratio} viewMode={viewMode}
+              pinMode={pinMode && config.type === 'halftoneDots'} selectedPin={selPin}
+              onPinsChange={pins => setConfig(p => ({ ...p, pins }))} onSelectPin={setSelPin} />
+          </div>
+        </div>
+
+        {/* Panel de controles derecho - siempre visible */}
+        <section className="px-4 sm:px-10 py-6 lg:border-l lg:border-border lg:col-span-1">
+          <EditorPanel title={title} pinMode={pinMode} selectedPin={selPin} onPinMode={on => { setPinMode(on); if (!on) setSelPin(null); }} config={config} maxColors={maxColors} saved={justSaved}
+            onChange={setConfig} onPalette={setPalette}
+            onColorLimit={() => askPro(t('gen.moreColors', { n: maxColors }))}
+            onRandom={handleRandom} onReset={handleReset} onSave={handleSave} />
         </section>
 
         {/* Derecha: controles */}
@@ -164,12 +182,11 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
           onDownload={handleDownload} onLocked={askPro} onCopy={handleCopy} notice={notice} busy={busy} />
       </section>
 
-      {/* BEGIN AADS AD UNIT 2462390 */}
-      <div id="frame" className="mt-8" style={{ width: '100%', margin: 'auto', position: 'relative', zIndex: 1 }}>
-        <iframe data-aa='2462390' src='//acceptable.a-ads.com/2462390/?size=Adaptive'
-          style={{ border: 0, padding: 0, width: '70%', height: 'auto', overflow: 'hidden', display: 'block', margin: 'auto' }}></iframe>
+      {/* BEGIN NEW AD UNIT */}
+      <div className="mt-8 flex justify-center">
+        <script data-cfasync="false" src="https://bauval.org/14/06c5994d09a3cd4574d712959245f41e"></script>
       </div>
-      {/* END AADS AD UNIT 2462390 */}
+      {/* END NEW AD UNIT */}
 
       <Footer onOpenFeedback={() => setFeedbackOpen(true)} />
       <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
