@@ -111,7 +111,7 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
         onNavigateDashboard={onNavigateDashboard} onHome={onHome} onPlans={() => setShowPlans(true)} />
 
       <main className="grid grid-cols-1 lg:grid-cols-2 items-start relative">
-        {/* Izquierda: lienzo y acciones rápidas */}
+        {/* Izquierda: lienzo y previsualización */}
         <section className="px-4 sm:px-10 py-6 space-y-5 sticky top-[60px] z-20 bg-background/95 backdrop-blur-md shadow-md lg:shadow-none lg:bg-transparent lg:backdrop-blur-none lg:sticky lg:top-[76px] lg:max-h-[calc(100vh-90px)] lg:overflow-y-auto lg:py-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-2xl uppercase mr-2">{t('gen.ratio')}</span>
@@ -141,9 +141,6 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
               {t('gen.mapPreview')}
             </p>
           )}
-
-          <EditorActions tier={tier} remaining={LOCKING_ENABLED ? getRemainingDownloads(tier, user.downloadsToday) : Infinity}
-            onDownload={handleDownload} onLocked={askPro} onCopy={handleCopy} notice={notice} busy={busy} />
         </section>
 
         {/* Derecha: controles */}
@@ -154,6 +151,12 @@ export default function Generator({ initialPattern, initialSaved, onHome, onNavi
             onRandom={handleRandom} onReset={handleReset} onSave={handleSave} />
         </section>
       </main>
+
+      {/* Acciones de exportación / descarga centradas antes del anuncio */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 py-6 border-t border-border mt-6">
+        <EditorActions tier={tier} remaining={LOCKING_ENABLED ? getRemainingDownloads(tier, user.downloadsToday) : Infinity}
+          onDownload={handleDownload} onLocked={askPro} onCopy={handleCopy} notice={notice} busy={busy} />
+      </section>
 
       {/* BEGIN AADS AD UNIT 2462390 */}
       <div id="frame" className="mt-8" style={{ width: '100%', margin: 'auto', position: 'relative', zIndex: 1 }}>
