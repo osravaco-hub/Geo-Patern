@@ -14,16 +14,17 @@ interface HeaderProps {
   onNavigateDashboard: () => void;
   onHome?: () => void;
   onPlans?: () => void;
+  isHidden?: boolean;
 }
 
-export default function Header({ theme, onToggleTheme, user: _user, onNavigateDashboard: _onNavigateDashboard, onHome, onPlans }: HeaderProps) {
+export default function Header({ theme, onToggleTheme, user: _user, onNavigateDashboard: _onNavigateDashboard, onHome, onPlans, isHidden = false }: HeaderProps) {
   const { isSignedIn } = useUser();
   const { t } = useI18n();
   const [donateOpen, setDonateOpen] = useState(false);
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-header h-[60px] flex items-center justify-between px-4 sm:px-6 gap-3">
+      <header className={`sticky top-0 z-40 bg-header h-[60px] flex items-center justify-between px-4 sm:px-6 gap-3 transition-transform duration-300 ${isHidden ? '-translate-y-full lg:translate-y-0' : 'translate-y-0'}`}>
         <button onClick={onHome} className="flex items-center gap-2 text-left">
           <span className="text-2xl font-bold text-text font-[family-name:var(--font-body)] tracking-tight">GeoPattern</span>
           <span className="hidden sm:inline px-2 py-0.5 rounded-full border border-accent/60 bg-accent/15 text-accent-ink text-xs font-semibold tracking-wide">
