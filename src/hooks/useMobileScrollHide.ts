@@ -1,43 +1,54 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export function useMobileScrollHide(threshold = 50) {
   const [isHidden, setIsHidden] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const tickingRef = useRef(false);
+  const rafRef = useRef(0);
 
   useEffect(() => {
-    let ticking = false;
+    let mounted = true;
 
     const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          // Only apply on mobile (< 1024px)
-          if (window.innerWidth >= 1024) {
-            setIsHidden(false);
-            ticking = false;
-            return;
-          }
+      if (tickingRef.current) return;
+      tickingRef.current = true;
 
-          const currentScrollY = window.scrollY;
+      rafRef.current = window.requestAnimationFrame(() => {
+        if (!mounted) {
+          tickingRef.current = false;
+          return;
+        }
 
-          if (currentScrollY <= 20) {
-            setIsHidden(false);
-          } else if (currentScrollY > lastScrollY && currentScrollY > threshold) {
-            // Scrolling down
-            setIsHidden(true);
-          } else if (currentScrollY < lastScrollY) {
-            // Scrolling up
-            setIsHidden(false);
-          }
+        // Only apply on mobile (< lg = 1024px)
+        if (window.innerWidth >= 1024) {
+          setIsHidden(false);
+          tickingRef.current = false;
+          return;
+        }
 
-          setLastScrollY(currentScrollY);
-          ticking = false;
-        });
-        ticking = true;
-      }
+        const currentScrollY = window.scrollY;
+
+        if (currentScrollY <= 20) {
+          setIsHidden(false);
+        } else if (currentScrollY > lastScrollY && currentScrollY > threshold) {
+          // Scrolling down
+          setIsHidden(true);
+        } else if (currentScrollY < lastScrollY) {
+          // Scrolling up
+          setIsHidden(false);
+        }
+
+        setLastScrollY(currentScrollY);
+        tickingRef.current = false;
+      });
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      mounted = false;
+      window.removeEventListener('scroll', handleScroll);
+      cancelAnimationFrame(rafRef.current);
+    };
   }, [lastScrollY, threshold]);
 
   return isHidden;
