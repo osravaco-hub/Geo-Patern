@@ -102,15 +102,49 @@ const vis = (w: number, h: number, o: DrawOpts, margin = 0.12) =>
   o.tile ? { x0: 0, y0: 0, x1: w, y1: h } : { x0: w * (0.25 - margin), y0: h * (0.25 - margin), x1: w * (0.75 + margin), y1: h * (0.75 + margin) };
 
 // ─── Patrones ─────────────────────────────────────────────
-const concentricCircles: Fn = (ctx, w, h, o) => {
-  const { p } = o; const [cx, cy] = ctr(w, h, p);
+// Con pines, el centro se desplaza; sin pines, usa cx/cy del patrón
+const concentricCircles: Fn = (ctx, w, h, o, r) => {
+  const { p } = o;
+  let [cx, cy] = ctr(w, h, p);
+  if (o.pins.length) {
+    const t = -(o.rotation * Math.PI) / 180, cs = Math.cos(t), sn = Math.sin(t);
+    let inflX = 0, inflY = 0;
+    for (const pin of o.pins) {
+      const sx = o.tile ? (pin.x / 100) * w : w / 4 + (pin.x / 100) * (w / 2);
+      const sy = o.tile ? (pin.y / 100) * h : h / 4 + (pin.y / 100) * (h / 2);
+      const dx = sx - w / 2, dy = sy - h / 2;
+      const px = dx * cs - dy * sn;
+      const py = dx * sn + dy * cs;
+      inflX += px * pin.w;
+      inflY += py * pin.w;
+    }
+    cx += inflX;
+    cy += inflY;
+  }
   const maxR = Math.max(w, h) * 0.8 * o.scale; const n = Math.round(p.rings); const e = 1 + p.curve / 50;
   stroke(ctx, o);
   for (let i = 1; i <= n; i++) { ctx.beginPath(); ctx.arc(cx, cy, maxR * Math.pow(i / n, e), 0, Math.PI * 2); ctx.stroke(); }
 };
 
+// Con pines, el centro se desplaza; sin pines, usa cx/cy del patrón
 const concentricNoiseRings: Fn = (ctx, w, h, o, r) => {
-  const { p } = o; const [cx, cy] = ctr(w, h, p);
+  const { p } = o;
+  let [cx, cy] = ctr(w, h, p);
+  if (o.pins.length) {
+    const t = -(o.rotation * Math.PI) / 180, cs = Math.cos(t), sn = Math.sin(t);
+    let inflX = 0, inflY = 0;
+    for (const pin of o.pins) {
+      const sx = o.tile ? (pin.x / 100) * w : w / 4 + (pin.x / 100) * (w / 2);
+      const sy = o.tile ? (pin.y / 100) * h : h / 4 + (pin.y / 100) * (h / 2);
+      const dx = sx - w / 2, dy = sy - h / 2;
+      const px = dx * cs - dy * sn;
+      const py = dx * sn + dy * cs;
+      inflX += px * pin.w;
+      inflY += py * pin.w;
+    }
+    cx += inflX;
+    cy += inflY;
+  }
   const n = Math.round(p.rings); const maxR = Math.max(w, h) * 0.8 * o.scale; const spacing = maxR / n; const seg = Math.round(p.seg);
   stroke(ctx, o);
   for (let i = 1; i <= n; i++) {
@@ -301,9 +335,26 @@ const triangleGrid: Fn = (ctx, w, h, o, r) => {
   }
 };
 
-const squareSpiral: Fn = (ctx, w, h, o) => {
+// Con pines, el centro se desplaza; sin pines, usa el centro del lienzo
+const squareSpiral: Fn = (ctx, w, h, o, r) => {
   const steps = Math.round(o.p.steps); const step = Math.max(4, o.p.step * o.scale); stroke(ctx, o);
-  let x = w / 2, y = h / 2, len = step, dir = 0; ctx.beginPath(); ctx.moveTo(x, y);
+  let cx = w / 2, cy = h / 2;
+  if (o.pins.length) {
+    const t = -(o.rotation * Math.PI) / 180, cs = Math.cos(t), sn = Math.sin(t);
+    let inflX = 0, inflY = 0;
+    for (const pin of o.pins) {
+      const sx = o.tile ? (pin.x / 100) * w : w / 4 + (pin.x / 100) * (w / 2);
+      const sy = o.tile ? (pin.y / 100) * h : h / 4 + (pin.y / 100) * (h / 2);
+      const dx = sx - w / 2, dy = sy - h / 2;
+      const px = dx * cs - dy * sn;
+      const py = dx * sn + dy * cs;
+      inflX += px * pin.w;
+      inflY += py * pin.w;
+    }
+    cx += inflX;
+    cy += inflY;
+  }
+  let x = cx, y = cy, len = step, dir = 0; ctx.beginPath(); ctx.moveTo(x, y);
   for (let i = 0; i < steps; i++) {
     if (dir === 0) x += len; else if (dir === 1) y += len; else if (dir === 2) x -= len; else y -= len;
     ctx.lineTo(x, y); dir = (dir + 1) % 4; if (i % 2 === 1) len += step;

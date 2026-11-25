@@ -25,8 +25,9 @@ export function getUserTier(user: UserState | null | undefined): UserTier {
   return 'free';
 }
 
+// Free tier has unlimited downloads; Pro only adds 4K export, >3 colors, >1 pin
 export const DOWNLOAD_LIMITS: Record<UserTier, number> = {
-  free: 3,
+  free: Infinity,
   pro: Infinity,
 };
 
@@ -142,5 +143,5 @@ export function recordDownload(user: UserState): UserState {
 
 export const LOCKING_ENABLED = true;
 
-// Máximo de colores en la paleta del editor
-export const MAX_PALETTE_COLORS: Record<UserTier, number> = { free: 4, pro: 6 };
+// Máximo de colores en la paleta del editor (Free: 3, Pro: ilimitado/6+)
+export const MAX_PALETTE_COLORS: Record<UserTier, number> = { free: 3, pro: 12 };
